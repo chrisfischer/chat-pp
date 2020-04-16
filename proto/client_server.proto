@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package client_server;
+
+service ChatApp {
+    rpc EnterChatRoom(stream Message) returns (stream Message) {}
+
+	rpc SendRequest(Request) returns (RequestResult) {}
+
+	rpc VoteRequest(VotingInfo) returns (Vote) {}
+}
+
+
+message User {
+	string userID = 1;
+}
+
+message Message {
+	string content = 1;
+
+	User sender = 2;
+
+	string time = 3;
+}
