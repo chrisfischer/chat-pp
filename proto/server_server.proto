@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package server_server;
+
+message TextMessage {
+  string text = 1;
+}
+
+message MessageRequest {
+  string sender = 1;
+  oneof message_oneof {
+    TextMessage message = 2;
+  }
+}
+
+message MessageResponse {
+  bool success = 1;
+}
+
+service MessageService {
+  rpc Message (MessageRequest) returns (MessageResponse);
+}
