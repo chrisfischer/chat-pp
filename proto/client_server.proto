@@ -17,8 +17,28 @@ message User {
 
 message Message {
 	string content = 1;
-
 	User sender = 2;
-
 	string time = 3;
+}
+
+message Request {
+    string type = 1;
+    string chatRoom = 2;
+    string info = 3; // i.e. new nickname
+}
+
+message RequestResult {
+    bool success = 1;
+    Request request = 2;
+}
+
+message VotingInfo {
+    User requester = 1;
+    string chatRoom = 2;
+}
+
+message Vote {
+    bool approved = 1;
+    VotingInfo voteInfo = 2;
+    User voter = 3;
 }
