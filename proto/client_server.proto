@@ -3,7 +3,7 @@ syntax = "proto3";
 package client_server;
 
 service ChatApp {
-    rpc EnterChatRoom(stream Message) returns (stream Message) {}
+   	rpc EnterChatRoom(stream Message) returns (stream Message) {}
 
 	rpc SendRequest(Request) returns (RequestResult) {}
 
@@ -21,9 +21,20 @@ message Message {
 	string time = 3;
 }
 
+message ChatRoom {
+    string chatRoomID = 1;
+}
+
 message Request {
-    string type = 1;
-    string chatRoom = 2;
+    
+    enum RequestType {
+      ENTER = 0;
+      EXIT = 1;
+      CHANGE_NAME = 2;
+    }
+    
+    RequestType type = 1;
+    ChatRoom chatRoom = 2;
     string info = 3; // i.e. new nickname
 }
 
@@ -34,7 +45,7 @@ message RequestResult {
 
 message VotingInfo {
     User requester = 1;
-    string chatRoom = 2;
+    ChatRoom chatRoom = 2;
 }
 
 message Vote {

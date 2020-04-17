@@ -13,3 +13,13 @@ cc_binary(
     "@com_github_grpc_grpc//:grpc++",
   ],
 )
+
+cc_binary(
+  name = "client",
+  srcs = ["client"],
+  defines = ["BAZEL_BUILD"],
+  deps = [
+    "//proto:client_server_cc_grpc",
+    "@com_github_grpc_grpc//:grpc++",
+  ],
+)

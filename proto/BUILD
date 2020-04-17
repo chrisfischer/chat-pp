@@ -20,3 +20,20 @@ cc_grpc_library(
   deps = [":server_server_cc_proto"],
   grpc_only = True,
 )
+
+proto_library(
+  name = "client_server_proto",
+  srcs = ["client_server.proto"],
+)
+
+cc_proto_library(
+  name = "client_server_cc_proto",
+  deps = [":client_server_proto"],
+)
+
+cc_grpc_library(
+  name = "client_server_cc_grpc",
+  srcs = [":client_server_proto"],
+  deps = [":client_server_cc_proto"],
+  grpc_only = True,
+)
