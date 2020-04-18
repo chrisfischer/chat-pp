@@ -4,3 +4,5 @@ bazel-project-c
 bazel-testlogs
 
 .vscode
+
+.DS_Store
