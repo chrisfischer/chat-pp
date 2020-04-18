@@ -2,3 +2,5 @@ bazel-bin
 bazel-out
 bazel-project-c
 bazel-testlogs
+
+.vscode
