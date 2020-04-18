@@ -17,7 +17,7 @@ cc_binary(
 
 cc_binary(
   name = "client",
-  srcs = ["client"],
+  srcs = ["client.cpp"],
   defines = ["BAZEL_BUILD"],
   deps = [
     "//proto:client_server_cc_grpc",
