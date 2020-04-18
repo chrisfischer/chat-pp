@@ -9,6 +9,7 @@ cc_binary(
   srcs = ["server.cpp"],
   defines = ["BAZEL_BUILD"],
   deps = [
+    "//proto:client_server_cc_grpc",
     "//proto:server_server_cc_grpc",
     "@com_github_grpc_grpc//:grpc++",
   ],
