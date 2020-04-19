@@ -2,54 +2,65 @@ syntax = "proto3";
 
 package client_server;
 
-service ChatApp {
-   	rpc EnterChatRoom(stream Message) returns (stream Message) {}
 
-	rpc SendRequest(Request) returns (RequestResult) {}
-
-	rpc VoteRequest(VotingInfo) returns (Vote) {}
+message TextMessage {
+    string room = 1;
+    string text = 2;
 }
 
+message NicknameMessage {
+    string room = 1;
+    string old_nickname = 2;
+    string new_nickname = 3;
+}
 
-message User {
-	string userID = 1;
+message LeftMessage {
+    string room = 1;
+    string nickname = 2;
+}
+
+message JoinMessage {
+    string room = 1;
+    string nickname = 2;
+}
+
+message VoteMessage {
+    string room = 1;
+    string vote_id = 2;
+    bool vote = 3;
+}
+
+message VoteResultMessage {
+    string room = 1;
+    bool vote = 3;
+    string message = 4;
+    int64 total_number_users = 5;
+}
+
+message StartKickVoteMessage {
+    string room = 1;
+    string nickname = 2;
+    string vote_id = 3;
 }
 
 message Message {
-	string content = 1;
-	User sender = 2;
-	string time = 3;
-}
-
-message ChatRoom {
-    string chatRoomID = 1;
-}
-
-message Request {
-    
-    enum RequestType {
-      ENTER = 0;
-      EXIT = 1;
-      CHANGE_NAME = 2;
+    oneof message_oneof {
+        TextMessage text_message = 2;
+        NicknameMessage nickname_message = 3;
+        JoinMessage join_message = 4;
+        LeftMessage left_message = 5;
+        VoteMessage vote_message = 6;
+        StartKickVoteMessage start_kick_vote_message = 7;
     }
-    
-    RequestType type = 1;
-    ChatRoom chatRoom = 2;
-    string info = 3; // i.e. new nickname
 }
 
-message RequestResult {
-    bool success = 1;
-    Request request = 2;
+message MessageResult {
+    bool received = 1;
 }
 
-message VotingInfo {
-    User requester = 1;
-    ChatRoom chatRoom = 2;
-}
+message Empty {}
 
-message Vote {
-    bool approved = 1;
-    VotingInfo voteInfo = 2;
-    User voter = 3;
+service ChatService {
+    rpc ReceiveMessages(Empty) returns (stream Message) {}
+    rpc SendMessage(Message) returns (MessageResult) {}
 }
