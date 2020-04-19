@@ -1,5 +1,5 @@
-#ifndef SOCK_ADDR_HH_
-#define SOCK_ADDR_HH_
+#ifndef SOCK_ADDR_HPP_
+#define SOCK_ADDR_HPP_
 
 #include <string>
 
@@ -11,4 +11,4 @@ public:
   bool operator<(const SockAddr &rhs) const;
 };
 
-#endif /* SOCK_ADDR_HH_ */
+#endif /* SOCK_ADDR_HPP_ */

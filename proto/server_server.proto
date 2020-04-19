@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package server_server;
+package SS;
 
 message TextMessage {
   string room = 1;
