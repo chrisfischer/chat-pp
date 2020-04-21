@@ -2,53 +2,20 @@ syntax = "proto3";
 
 package SS;
 
-message TextMessage {
-  string room = 1;
-  string text = 2;
-}
-
-message NicknameMessage {
-  string room = 1;
-  string old_nickname = 2;
-  string new_nickname = 3;
-}
-
-message JoinMessage {
-  string room = 1;
-  string nickname = 2;
-}
-
-message LeftMessage {
-  string room = 1;
-  string nickname = 2;
-}
-
-message VoteMessage {
-  string room = 1;
-  string vote_id = 2;
-  bool vote = 3;
-}
-
-message StartVoteMessage {
-  string room = 1;
-  string vote_id = 2;
-  string message = 3;
-}
+import "proto/client_server.proto";
 
 message MessageRequest {
-  string sender_id = 1;
-  oneof message_oneof {
-    TextMessage text_message = 2;
-    NicknameMessage nickname_message = 3;
-    JoinMessage join_message = 4;
-    LeftMessage left_message = 5;
-    VoteMessage vote_message = 6;
-    StartVoteMessage start_vote_message = 7;
-  }
+    string sender_id = 1;
+    oneof message_oneof {
+        client_server.TextMessage text_message = 2;
+        client_server.NicknameMessage nickname_message = 3;
+        client_server.JoinMessage join_message = 4;
+        client_server.LeftMessage left_message = 5;
+        client_server.VoteMessage vote_message = 6;
+        client_server.StartKickVoteMessage start_vote_message = 7;
+    }
 }
 
-message Empty {}
-
 service MessageService {
-  rpc ServerServerService (MessageRequest) returns (Empty);
+    rpc Forward (MessageRequest) returns (client_server.Empty);
 }

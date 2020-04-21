@@ -7,6 +7,7 @@ package(default_visibility = ["//visibility:public"])
 proto_library(
   name = "server_server_proto",
   srcs = ["server_server.proto"],
+  deps = [":client_server_proto"],
 )
 
 cc_proto_library(
