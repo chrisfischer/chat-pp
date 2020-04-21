@@ -39,11 +39,11 @@ private:
     std::map<std::string, VoteState> votes;
 
 public:
-    std::optional<std::string> updateNickname(const std::string & addr, const std::string & nickname);
-    void leaveRoom(const std::string & addr);
-    void joinRoom(const std::string & addr, int room);
-    int updateRoomSize(int room, int change);
-    std::string startVote(int room, client_server::VoteType vote_type, const std::string & target_addr);
+    std::optional<std::string> update_nickname(const std::string & addr, const std::string & nickname);
+    void leave_room(const std::string & addr);
+    void join_room(const std::string & addr, int room);
+    int update_room_size(int room, int change);
+    std::string start_vote(int room, client_server::VoteType vote_type, const std::string & target_addr);
 };
 
 #endif /* SERVER_STATE_HPP_ */

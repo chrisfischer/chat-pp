@@ -12,10 +12,11 @@
 class MessageServiceClient {
 private:
     std::unique_ptr<SS::MessageService::Stub> stub_;
+    grpc::CompletionQueue cq;
 
 public:
     MessageServiceClient(std::shared_ptr<grpc::Channel> channel);
-    grpc::Status Forward(const std::string & sender_addr, const client_server::Message & message);
+    void Forward(const std::string & sender_addr, const client_server::Message & message);
 };
 
 class MessageServiceImpl final : public SS::MessageService::Service {

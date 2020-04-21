@@ -11,7 +11,7 @@ cc_library(
   deps = [
     "//proto:client_server_cc_grpc",
     "@boost//:uuid",
-  ]
+  ],
 )
 
 cc_library(
@@ -24,6 +24,7 @@ cc_library(
     "//proto:server_server_cc_grpc",
     "@com_github_grpc_grpc//:grpc++",
   ],
+  linkopts = ["-lpthread"],
 )
 
 cc_binary(
@@ -34,6 +35,7 @@ cc_binary(
     ":server_state",
     ":server_server_api",
   ],
+  linkopts = ["-lpthread"],
 )
 
 cc_binary(
