@@ -2,16 +2,31 @@
 #define SERVER_SERVER_HPP_
 
 #include <grpcpp/grpcpp.h>
+#include <string>
 
+#include "src/server_state.hpp"
+
+#include "proto/client_server.grpc.pb.h"
 #include "proto/server_server.grpc.pb.h"
 
-class ServerServerApi {
+class MessageServiceClient {
 private:
-    std::unique_ptr<server_server::MessageService::Stub> stub_;
+    std::unique_ptr<SS::MessageService::Stub> stub_;
 
 public:
-    ServerServerApi(std::shared_ptr<grpc::Channel> channel);
+    MessageServiceClient(std::shared_ptr<grpc::Channel> channel);
+    grpc::Status Forward(const std::string & sender_addr, const client_server::Message & message);
+};
 
+class MessageServiceImpl final : public SS::MessageService::Service {
+private:
+    std::shared_ptr<ServerState> state;
+
+public:
+    MessageServiceImpl(std::shared_ptr<ServerState> state);
+    grpc::Status Forward(grpc::ServerContext* context,
+            const SS::MessageRequest* request,
+            client_server::Empty* response) override;
 };
 
 #endif /* SERVER_SERVER_HPP_ */

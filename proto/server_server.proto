@@ -9,10 +9,9 @@ message MessageRequest {
     oneof message_oneof {
         client_server.TextMessage text_message = 2;
         client_server.NicknameMessage nickname_message = 3;
-        client_server.JoinMessage join_message = 4;
+        client_server.StartVoteMessage start_vote_message = 4;
         client_server.LeftMessage left_message = 5;
         client_server.VoteMessage vote_message = 6;
-        client_server.StartKickVoteMessage start_vote_message = 7;
     }
 }
 
