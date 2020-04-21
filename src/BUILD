@@ -15,6 +15,17 @@ cc_library(
 )
 
 cc_library(
+  name = "chat_service_impl",
+  srcs = ["chat_service_impl.cpp"],
+  hdrs = ["chat_service_impl.hpp"],
+  deps = [
+    ":server_server_api",
+    "//proto:client_server_cc_grpc",
+    "@com_github_grpc_grpc//:grpc++",
+  ],
+)
+
+cc_library(
   name = "server_server_api",
   srcs = ["server_server_api.cpp"],
   hdrs = ["server_server_api.hpp"],
@@ -34,6 +45,7 @@ cc_binary(
   deps = [
     ":server_state",
     ":server_server_api",
+    ":chat_service_impl",
   ],
   linkopts = ["-lpthread"],
 )

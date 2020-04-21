@@ -1,8 +1,8 @@
 #ifndef SERVER_SERVER_HPP_
 #define SERVER_SERVER_HPP_
 
-#include <grpcpp/grpcpp.h>
 #include <string>
+#include <grpcpp/grpcpp.h>
 
 #include "src/server_state.hpp"
 
