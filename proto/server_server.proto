@@ -6,7 +6,7 @@ import "proto/client_server.proto";
 
 message MessageRequest {
     string sender_id = 1;
-    oneof message_oneof {
+    oneof oneof_message {
         client_server.TextMessage text_message = 2;
         client_server.NicknameMessage nickname_message = 3;
         client_server.StartVoteMessage start_vote_message = 4;

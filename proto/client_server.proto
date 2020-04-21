@@ -46,7 +46,7 @@ message StartVoteMessage {
 }
 
 message Message {
-    oneof message_oneof {
+    oneof oneof_message {
         TextMessage text_message = 2;
         NicknameMessage nickname_message = 3;
         StartVoteMessage start_vote_message = 4;
