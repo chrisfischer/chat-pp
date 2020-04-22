@@ -6,12 +6,14 @@ import "proto/client_server.proto";
 
 message MessageRequest {
     string sender_id = 1;
+    string nickname = 2;
+    string room = 3;
     oneof oneof_message {
-        client_server.TextMessage text_message = 2;
-        client_server.NicknameMessage nickname_message = 3;
-        client_server.StartVoteMessage start_vote_message = 4;
-        client_server.LeftMessage left_message = 5;
-        client_server.VoteMessage vote_message = 6;
+        client_server.TextMessage text_message = 4;
+        client_server.NicknameMessage nickname_message = 5;
+        client_server.StartVoteMessage start_vote_message = 6;
+        client_server.LeftMessage left_message = 7;
+        client_server.VoteMessage vote_message = 8;
     }
 }
 

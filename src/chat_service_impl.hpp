@@ -15,7 +15,7 @@ private:
 
 public:
     // map from client addr to writer
-    std::map<std::string, std::unique_ptr<grpc::ServerWriter<client_server::Message>>> writers;
+    std::map<std::string, std::shared_ptr<grpc::ServerWriter<client_server::Message>>> writers;
     // std::map<std::string, grpc::ServerWriter<client_server::Message>*> writers;
 
     // TODO use map in constructor
