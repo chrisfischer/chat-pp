@@ -1,9 +1,41 @@
 #include <iostream>
-#include <fstream>
 #include <cstring>
+#include <fstream>
 #include <sstream>
+#include <cxxopts>
+
+#include "proto/client_server.grpc.pb.h"
 
 using namespace std;
+
+/*
+ 1. user starts up chat app
+ 2. user enters IP and port
+ 3. user is given list of commands:
+    OUTSIDE OF CHATROOM
+    1. enter <chatroom>
+ 
+    INSIDE CHATROOM
+    1. leave <chatroom>
+    2. set nickname <new_nickname>
+    3. kick out <username>
+    4. <message>
+    5. submit vote <yes/no> <username>
+    6.
+ 
+    client needs to listen for incoming messages from the server and respond accordingly
+    should have separate messages for
+ */
+
+void startClientServer() {
+    std::shared_ptr<ClientReader<Message>> stream(
+        stub_->ReceiveMessages(&context, Empty));
+    while (reader->Read(&message)) {
+        
+    }
+    Status status = reader->Finish();
+}
+
 
 void programStart(ostream &os, istream &is)
 {
@@ -17,9 +49,16 @@ void programStart(ostream &os, istream &is)
     is >> serverIP;
     os << "Port:" << endl;
     is >> port;
-
-    // exit out with message if port or ip address are incorrect
+    
+    // error message if port or ip address are incorrect
+    // TODO: decide if we want to exit or use while loop
+    
+    // start up client
 }
+
+
+
+
 
 int main()
 {
