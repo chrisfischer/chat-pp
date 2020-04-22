@@ -18,7 +18,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(grpc::ServerContext *context,
                                               const client_server::Empty *request,
                                               grpc::ServerWriter<client_server::Message> *writer)
 {
-    writers["TODO get IP"] = std::unique_ptr<grpc::ServerWriter<client_server::Message>>{writer};
+    writers["TODO get IP"] = std::shared_ptr<grpc::ServerWriter<client_server::Message>>{writer};
 
     // TODO
     // while(true) {};
@@ -37,7 +37,8 @@ grpc::Status ChatServiceImpl::SendMessage(grpc::ServerContext *context,
     std::cout << context->peer() << std::endl;
     for (int i = 0; i < forwarding_clients.size(); i++)
     {
-        // forwarding_clients.at(i)->Forward(context->peer(), *request);
+        // TODO check if peer is the addr
+        forwarding_clients.at(i)->Forward(context->peer(), *request);
     }
 
     return grpc::Status::OK;
