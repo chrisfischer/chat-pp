@@ -5,18 +5,23 @@
 #include <grpcpp/grpcpp.h>
 
 #include "proto/client_server.grpc.pb.h"
+#include "proto/client_server.pb.h"
+
+using namespace std;
 
 class ClientServerAPI {
 
 private:
-    std::shared_ptr<grpc::Channel> channel;
     string room;
     string nickname;
-    MessageResult send_message(Message &msg);
+    bool send_message(client_server::Message &msg);
 
 public:
+    shared_ptr<client_server::ChatService::Stub> stub_;
+
     ClientServerAPI(std::shared_ptr<grpc::Channel> channel);
     
+    shared_ptr<grpc::ClientReader<client_server::Message>> get_reader();
     bool send_text(string &text);
     bool change_nickname(string &new_nickname);
     bool leave_room();

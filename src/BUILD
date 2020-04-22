@@ -62,12 +62,24 @@ cc_binary(
     ],
 )
 
+cc_library(
+    name = "client_server_api",
+    srcs = ["client_server_api.cpp"],
+    hdrs = ["client_server_api.hpp"],
+    linkopts = ["-lpthread"],
+    deps = [
+        "//proto:client_server_cc_grpc",
+        "@com_github_grpc_grpc//:grpc++",
+    ],
+)
+
 cc_binary(
     name = "client",
     srcs = ["client.cpp"],
     defines = ["BAZEL_BUILD"],
     deps = [
         "//proto:client_server_cc_grpc",
+	":client_server_api",
         "@com_github_grpc_grpc//:grpc++",
     ],
 )
