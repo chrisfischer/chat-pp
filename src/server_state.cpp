@@ -2,7 +2,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include "src/server_state.hpp"
+#include "server_state.hpp"
 
 VoteState::VoteState(int room, client_server::VoteType vote_type, const std::string & target_addr)
     : room{room}, vote_type{vote_type}, target_addr{target_addr}, votes_for{0}, votes_against{0} {}

@@ -3,20 +3,20 @@
 
 #include <iostream>
 
-#include "server_server_api.hpp"
+#include "forwarding_service_client.hpp"
 #include "proto/server_server.grpc.pb.h"
 
 using namespace std;
 
-MessageServiceClient::MessageServiceClient(std::shared_ptr<grpc::Channel> channel) :
-        stub_(SS::MessageService::NewStub(channel)) {}
+ForwardingServiceClient::ForwardingServiceClient(std::shared_ptr<grpc::Channel> channel) :
+        stub_(SS::ForwardingService::NewStub(channel)) {}
 
 
 void send_async() {
 
 }
 
-void MessageServiceClient::Forward(const std::string & sender_addr, const client_server::Message & message) {
+void ForwardingServiceClient::Forward(const std::string & sender_addr, const client_server::Message & message) {
     // std::thread([&stub_](){
     //     stub_->A
     // }).detach();
@@ -58,15 +58,4 @@ void MessageServiceClient::Forward(const std::string & sender_addr, const client
     stub_->AsyncForward(&context, request, &cq);
 
     return;
-}
-
-MessageServiceImpl::MessageServiceImpl(
-        shared_ptr<ServerState> state) :
-        SS::MessageService::Service(), state{state} {}
-
-grpc::Status MessageServiceImpl::Forward(grpc::ServerContext* context,
-        const SS::MessageRequest* request,
-        client_server::Empty* response) {
-    cout << request << endl;
-    return grpc::Status::OK;
 }

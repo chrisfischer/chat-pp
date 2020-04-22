@@ -19,18 +19,31 @@ cc_library(
   srcs = ["chat_service_impl.cpp"],
   hdrs = ["chat_service_impl.hpp"],
   deps = [
-    ":server_server_api",
+    ":forwarding_service_client",
     "//proto:client_server_cc_grpc",
     "@com_github_grpc_grpc//:grpc++",
   ],
 )
 
 cc_library(
-  name = "server_server_api",
-  srcs = ["server_server_api.cpp"],
-  hdrs = ["server_server_api.hpp"],
+  name = "forwarding_service_client",
+  srcs = ["forwarding_service_client.cpp"],
+  hdrs = ["forwarding_service_client.hpp"],
+  deps = [
+    "//proto:client_server_cc_grpc",
+    "//proto:server_server_cc_grpc",
+    "@com_github_grpc_grpc//:grpc++",
+  ],
+  linkopts = ["-lpthread"],
+)
+
+cc_library(
+  name = "forwarding_service_impl",
+  srcs = ["forwarding_service_impl.cpp"],
+  hdrs = ["forwarding_service_impl.hpp"],
   deps = [
     ":server_state",
+    ":chat_service_impl",
     "//proto:client_server_cc_grpc",
     "//proto:server_server_cc_grpc",
     "@com_github_grpc_grpc//:grpc++",
@@ -44,7 +57,8 @@ cc_binary(
   defines = ["BAZEL_BUILD"],
   deps = [
     ":server_state",
-    ":server_server_api",
+    ":forwarding_service_client",
+    ":forwarding_service_impl",
     ":chat_service_impl",
   ],
   linkopts = ["-lpthread"],

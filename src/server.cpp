@@ -9,7 +9,9 @@
 #include <thread>
 #include <csignal>
 
-#include "server_server_api.hpp"
+#include "forwarding_service_client.hpp"
+#include "forwarding_service_impl.hpp"
+#include "server_state.hpp"
 
 using namespace std;
 
@@ -152,11 +154,17 @@ int main(int argc, char *argv[]) {
     // thread server_thread {run_server, bind_addr, server_f};
     ServerState server_state;
 
-    MessageServiceImpl message_service {make_shared<ServerState>(server_state)};
+    ChatServiceImpl chat_service {server_fwd_addrs};
+
+    ForwardingServiceImpl message_service {
+        make_shared<ServerState>(server_state), shared_ptr<ChatServiceImpl>{&chat_service}};
     grpc::ServerBuilder builder;
     builder.AddListeningPort(bind_addr, grpc::InsecureServerCredentials());
+    builder.RegisterService(&chat_service);
     builder.RegisterService(&message_service);
     server = unique_ptr<grpc::Server>(builder.BuildAndStart());
     server->Wait();
+
+
 
 }
