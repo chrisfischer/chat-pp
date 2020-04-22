@@ -3,12 +3,13 @@
 
 #include <string>
 
-class SockAddr {
+class SockAddr
+{
 public:
-  std::string addr;
+    std::string addr;
 
-  SockAddr(std::string s);
-  bool operator<(const SockAddr &rhs) const;
+    SockAddr(std::string s);
+    bool operator<(const SockAddr &rhs) const;
 };
 
 #endif /* SOCK_ADDR_HPP_ */

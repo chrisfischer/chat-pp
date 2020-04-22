@@ -8,7 +8,8 @@
 #include "proto/client_server.grpc.pb.h"
 #include "forwarding_service_client.hpp"
 
-class ChatServiceImpl final : public client_server::ChatService::Service {
+class ChatServiceImpl final : public client_server::ChatService::Service
+{
 private:
     std::vector<std::unique_ptr<ForwardingServiceClient>> forwarding_clients;
 
@@ -18,15 +19,15 @@ public:
     // std::map<std::string, grpc::ServerWriter<client_server::Message>*> writers;
 
     // TODO use map in constructor
-    ChatServiceImpl(const std::set<std::string> & addrs);
+    ChatServiceImpl(const std::set<std::string> &addrs);
 
-    grpc::Status ReceiveMessages(grpc::ServerContext* context,
-            const client_server::Empty* request,
-            grpc::ServerWriter<client_server::Message>* writer) override;
+    grpc::Status ReceiveMessages(grpc::ServerContext *context,
+                                 const client_server::Empty *request,
+                                 grpc::ServerWriter<client_server::Message> *writer) override;
 
-    grpc::Status SendMessage(grpc::ServerContext* context,
-            const client_server::Message* request,
-            client_server::MessageResult* response) override;
+    grpc::Status SendMessage(grpc::ServerContext *context,
+                             const client_server::Message *request,
+                             client_server::MessageResult *response) override;
 };
 
 #endif /* CLIENT_SERVER_IMPL_HPP_ */
