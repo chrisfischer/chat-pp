@@ -27,6 +27,10 @@ using namespace std;
     should have separate messages for
  */
 
+void process_message(string &msg) {
+    
+}
+
 void startClientServer() {
     ClientServerAPI csAPI {grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials())};
 
@@ -38,8 +42,7 @@ void startClientServer() {
     grpc::Status status = reader->Finish();
 }
 
-
-void programStart(ostream &os, istream &is)
+void prompt_cli(ostream &os, istream &is)
 {
     os << "Welcome to Ĉ++!" << endl;
     os << "In order to get started, please specify the IP address you would like to connect to." << endl;
@@ -56,5 +59,5 @@ void programStart(ostream &os, istream &is)
 
 int main()
 {
-    programStart(cout, cin);
+    prompt_cli(cout, cin);
 }

@@ -86,3 +86,17 @@ bool ClientServerAPI::submit_vote(string &room, string &vote_id, bool vote) {
 void ClientServerAPI::update_room(string &new_room) {
     room = new_room;
 }
+
+string ClientServerAPI::process_msg(client_server::Message &msg) {
+    if (msg.has_text_message()) {
+
+    } else if (msg.has_text_message()) {
+        
+    } else if (msg.has_nickname_message()) {
+        
+    } else if (msg.has_start_vote_message()) {
+        
+    } else if (msg.has_left_message()) {
+        
+    }
+}

@@ -28,6 +28,7 @@ public:
     bool join_room(string &room, string &new_nickname);
     bool submit_vote(string &room, string &vote_id, bool vote);
     void update_room(string &new_room);
+    string process_msg(client_server::Message &msg);
 };
 
 
