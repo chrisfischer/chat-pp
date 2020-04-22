@@ -25,8 +25,9 @@ public:
     bool send_text(string &text);
     bool change_nickname(string &new_nickname);
     bool leave_room();
-    bool join_room(string &room);
+    bool join_room(string &room, string &new_nickname);
     bool submit_vote(string &room, string &vote_id, bool vote);
+    void update_room(string &new_room);
 };
 
 
