@@ -13,6 +13,9 @@
 #include "forwarding_service_impl.hpp"
 #include "server_state.hpp"
 
+// TODO remove
+#include "client_server_api.hpp"
+
 using namespace std;
 
 bool IS_VERBOSE;
@@ -119,6 +122,20 @@ void sig_handler(int s) {
     }
 }
 
+void run_server(const string &bind_addr, const set<string> &server_fwd_addrs) {
+    auto server_state {make_shared<ServerState>()};
+    auto chat_service {make_shared<ChatServiceImpl>(server_fwd_addrs)};
+
+    ForwardingServiceImpl message_service {server_state, chat_service};
+    grpc::ServerBuilder builder;
+    cout << "run_server " << bind_addr << endl;
+    builder.AddListeningPort(bind_addr, grpc::InsecureServerCredentials());
+    builder.RegisterService(chat_service.get());
+    builder.RegisterService(&message_service);
+    server = unique_ptr<grpc::Server>(builder.BuildAndStart());
+    server->Wait();
+}
+
 int main(int argc, char *argv[]) {
 
     // PARSING ARGUMENTS
@@ -151,20 +168,13 @@ int main(int argc, char *argv[]) {
     sa.sa_handler = sig_handler;
     sigaction(SIGINT, &sa, NULL);
 
-    // thread server_thread {run_server, bind_addr, server_f};
-    ServerState server_state;
+    thread server_thread {run_server, bind_addr, server_fwd_addrs};
 
-    ChatServiceImpl chat_service {server_fwd_addrs};
+    ClientServerAPI chat_service {
+        grpc::CreateChannel(bind_addr, grpc::InsecureChannelCredentials())};
+    chat_service.get_reader();
+    chat_service.change_nickname("chris");
 
-    ForwardingServiceImpl message_service {
-        make_shared<ServerState>(server_state), shared_ptr<ChatServiceImpl>{&chat_service}};
-    grpc::ServerBuilder builder;
-    builder.AddListeningPort(bind_addr, grpc::InsecureServerCredentials());
-    builder.RegisterService(&chat_service);
-    builder.RegisterService(&message_service);
-    server = unique_ptr<grpc::Server>(builder.BuildAndStart());
-    server->Wait();
-
-
+    server_thread.join();
 
 }
