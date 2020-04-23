@@ -15,7 +15,7 @@ private:
     std::string nickname;
     bool send_message(client_server::Message &msg);
 
-   public:
+public:
     std::shared_ptr<client_server::ChatService::Stub> stub_;
 
     ClientServerAPI(std::shared_ptr<grpc::Channel> channel);
