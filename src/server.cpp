@@ -122,7 +122,7 @@ void sig_handler(int s) {
 
 void run_server(const string &bind_addr, const set<string> &server_fwd_addrs) {
     auto server_state{make_shared<ServerState>()};
-    auto chat_service{make_shared<ChatServiceImpl>(server_fwd_addrs)};
+    auto chat_service{make_shared<ChatServiceImpl>(server_state, server_fwd_addrs)};
 
     ForwardingServiceImpl message_service{server_state, chat_service};
     grpc::ServerBuilder builder;
@@ -170,9 +170,11 @@ int main(int argc, char *argv[]) {
     thread server_thread{run_server, bind_addr, server_fwd_addrs};
 
     ClientServerAPI chat_service{
-        grpc::CreateChannel(bind_addr, grpc::InsecureChannelCredentials())};
-    chat_service.get_reader();
-    chat_service.change_nickname("chris");
+        grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
+    // chat_service.get_reader();
+    for (int i = 0; i < 100; i++) {
+        chat_service.change_nickname("chris");
+    }
 
     server_thread.join();
 }

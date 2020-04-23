@@ -17,7 +17,7 @@ class ForwardingServiceImpl final : public SS::ForwardingService::Service {
     ForwardingServiceImpl(std::shared_ptr<ServerState> state,
                           std::shared_ptr<ChatServiceImpl> chat_service);
     grpc::Status Forward(grpc::ServerContext *context,
-                         const SS::MessageRequest *request,
+                         const SS::ForwardedMessage *request,
                          client_server::Empty *response) override;
 };
 

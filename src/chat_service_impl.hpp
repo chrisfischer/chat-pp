@@ -1,16 +1,18 @@
 #ifndef CLIENT_SERVER_IMPL_HPP_
 #define CLIENT_SERVER_IMPL_HPP_
 
-#include <grpcpp/grpcpp.h>
-
 #include <set>
 #include <vector>
 
-#include "forwarding_service_client.hpp"
+#include <grpcpp/grpcpp.h>
 #include "proto/client_server.grpc.pb.h"
+
+#include "forwarding_service_client.hpp"
+#include "server_state.hpp"
 
 class ChatServiceImpl final : public client_server::ChatService::Service {
    private:
+    std::shared_ptr<ServerState> state;
     std::vector<std::unique_ptr<ForwardingServiceClient>> forwarding_clients;
 
    public:
@@ -19,8 +21,7 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
     // std::shared_ptr<grpc::ServerWriter<client_server::Message>>> writers;
     std::map<std::string, grpc::ServerWriter<client_server::Message> *> writers;
 
-    // TODO use map in constructor
-    ChatServiceImpl(const std::set<std::string> &addrs);
+    ChatServiceImpl(std::shared_ptr<ServerState> state, const std::set<std::string> &fwd_addrs);
 
     grpc::Status ReceiveMessages(
         grpc::ServerContext *context, const client_server::Empty *request,
