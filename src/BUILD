@@ -77,6 +77,7 @@ cc_binary(
     name = "client",
     srcs = ["client.cpp"],
     defines = ["BAZEL_BUILD"],
+    linkopts = ["-lpthread"],
     deps = [
         "//proto:client_server_cc_grpc",
 	":client_server_api",
