@@ -1,19 +1,21 @@
+#include "src/forwarding_service_impl.hpp"
+
 #include <grpcpp/grpcpp.h>
 
 #include <iostream>
 
-#include "src/forwarding_service_impl.hpp"
 #include "proto/server_server.grpc.pb.h"
 
 using namespace std;
 
 ForwardingServiceImpl::ForwardingServiceImpl(
-    shared_ptr<ServerState> state, std::shared_ptr<ChatServiceImpl> chat_service) : state{state}, chat_service{chat_service} {}
+    shared_ptr<ServerState> state,
+    std::shared_ptr<ChatServiceImpl> chat_service)
+    : state{state}, chat_service{chat_service} {}
 
 grpc::Status ForwardingServiceImpl::Forward(grpc::ServerContext *context,
                                             const SS::MessageRequest *request,
-                                            client_server::Empty *response)
-{
+                                            client_server::Empty *response) {
     cout << request << endl;
 
     for (auto addr : state->addrs_in_room(request->room())) {

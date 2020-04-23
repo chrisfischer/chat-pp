@@ -55,6 +55,7 @@ cc_binary(
     defines = ["BAZEL_BUILD"],
     linkopts = ["-lpthread"],
     deps = [
+        ":client_server_api", # TODO remove
         ":chat_service_impl",
         ":forwarding_service_client",
         ":forwarding_service_impl",
@@ -80,7 +81,7 @@ cc_binary(
     linkopts = ["-lpthread"],
     deps = [
         "//proto:client_server_cc_grpc",
-	":client_server_api",
+	    ":client_server_api",
         "@com_github_grpc_grpc//:grpc++",
     ],
 )

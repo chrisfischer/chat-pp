@@ -5,18 +5,18 @@ package SS;
 import "proto/client_server.proto";
 
 message MessageRequest {
-    string sender_id = 1;
-    string nickname = 2;
-    string room = 3;
-    oneof oneof_message {
-        client_server.TextMessage text_message = 4;
-        client_server.NicknameMessage nickname_message = 5;
-        client_server.StartVoteMessage start_vote_message = 6;
-        client_server.LeftMessage left_message = 7;
-        client_server.VoteMessage vote_message = 8;
-    }
+  string sender_id = 1;
+  string nickname = 2;
+  string room = 3;
+  oneof oneof_message {
+    client_server.TextMessage text_message = 4;
+    client_server.NicknameMessage nickname_message = 5;
+    client_server.StartVoteMessage start_vote_message = 6;
+    client_server.LeftMessage left_message = 7;
+    client_server.VoteMessage vote_message = 8;
+  }
 }
 
 service ForwardingService {
-    rpc Forward (MessageRequest) returns (client_server.Empty);
+  rpc Forward(MessageRequest) returns (client_server.Empty);
 }

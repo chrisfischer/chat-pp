@@ -3,9 +3,8 @@
 
 #include <string>
 
-class SockAddr
-{
-public:
+class SockAddr {
+   public:
     std::string addr;
 
     SockAddr(std::string s);

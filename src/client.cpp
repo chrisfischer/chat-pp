@@ -1,6 +1,6 @@
-#include <iostream>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <thread>
 #include <mutex>
@@ -96,9 +96,4 @@ void run_client() {
   userThread.join();
 }
 
-
-
-int main()
-{
-  run_client();
-}
+int main() { run_client(); }

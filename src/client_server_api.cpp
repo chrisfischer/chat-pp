@@ -1,16 +1,19 @@
-#include <string>
+#include "src/client_server_api.hpp"
+
 #include <grpcpp/grpcpp.h>
+
+#include <string>
 
 #include "proto/client_server.grpc.pb.h"
 #include "proto/client_server.pb.h"
-#include "src/client_server_api.hpp"
 
 using namespace std;
 
-ClientServerAPI::ClientServerAPI(std::shared_ptr<grpc::Channel> channel) :
-  stub_(client_server::ChatService::NewStub(channel)) {}
+ClientServerAPI::ClientServerAPI(std::shared_ptr<grpc::Channel> channel)
+  : stub_(client_server::ChatService::NewStub(channel)) {}
 
-shared_ptr<grpc::ClientReader<client_server::Message>> ClientServerAPI::get_reader() {
+shared_ptr<grpc::ClientReader<client_server::Message>>
+ClientServerAPI::get_reader() {
   grpc::ClientContext context;
 
   shared_ptr<grpc::ClientReader<client_server::Message>> reader(
@@ -30,7 +33,7 @@ bool ClientServerAPI::send_message(client_server::Message &msg) {
 }
 
 bool ClientServerAPI::send_text(const string &text) {
-    client_server::TextMessage * text_msg = new client_server::TextMessage();
+    client_server::TextMessage *text_msg = new client_server::TextMessage();
     text_msg->set_text(text);
 
     client_server::Message msg;
@@ -39,7 +42,7 @@ bool ClientServerAPI::send_text(const string &text) {
 }
 
 bool ClientServerAPI::change_nickname(const string &new_nickname) {
-    client_server::NicknameMessage * nn_msg = new client_server::NicknameMessage();
+    client_server::NicknameMessage *nn_msg = new client_server::NicknameMessage();
     nn_msg->set_new_nickname(new_nickname);
 
     client_server::Message msg;
@@ -52,7 +55,7 @@ bool ClientServerAPI::change_nickname(const string &new_nickname) {
 }
 
 bool ClientServerAPI::leave_room() {
-    client_server::LeftMessage * left_msg = new client_server::LeftMessage();
+    client_server::LeftMessage *left_msg = new client_server::LeftMessage();
     left_msg->set_nickname(nickname);
 
     client_server::Message msg;
@@ -65,8 +68,8 @@ bool ClientServerAPI::leave_room() {
 }
 
 bool ClientServerAPI::join_room(const string &new_room) {
-    client_server::StartVoteMessage * sv_msg = new client_server::StartVoteMessage();
-    sv_msg->set_type(client_server::JOIN);
+    client_server::StartVoteMessage *sv_msg =
+        new client_server::StartVoteMessage();
 
     client_server::Message msg;
     msg.set_allocated_start_vote_message(sv_msg);
@@ -89,7 +92,7 @@ bool ClientServerAPI::kick(const string &nickname) {
 }
 
 bool ClientServerAPI::submit_vote(const string &vote_id, bool vote) {
-    client_server::VoteMessage * vote_msg = new client_server::VoteMessage();
+    client_server::VoteMessage *vote_msg = new client_server::VoteMessage();
     vote_msg->set_vote_id(vote_id);
     vote_msg->set_vote(vote);
 
@@ -112,30 +115,36 @@ string ClientServerAPI::process_nickname_msg(client_server::Message &msg) {
 string ClientServerAPI::process_start_vote_msg(client_server::Message &msg) {
     if (msg.start_vote_message().type() == client_server::JOIN) {
         return msg.room() + " > Please vote on whether to allow " +
-          msg.start_vote_message().nickname() +
-          " to join the chatroom. If you would like to let this person in, respond YES. Otherwise, respond NO. If you do not answer in the designated format your vote will default to a no.";
+               msg.start_vote_message().nickname() +
+               " to join the chatroom. If you would like to let this person in, "
+               "respond YES. Otherwise, respond NO. If you do not answer in the "
+               "designated format your vote will default to a no.";
     }
     return msg.room() + " > Please vote on whether to kick " +
-      msg.start_vote_message().nickname() +
-      " from the chatroom. If you would like to kick this person out, respond YES. Otherwise, respond NO. If you do not answer in the designated format your vote will default to a no.";
+           msg.start_vote_message().nickname() +
+           " from the chatroom. If you would like to kick this person out, "
+           "respond YES. Otherwise, respond NO. If you do not answer in the "
+           "designated format your vote will default to a no.";
 }
 
 string ClientServerAPI::process_left_msg(client_server::Message &msg) {
-    return msg.room() + " > " + msg.left_message().nickname() + " has left the room.";
+    return msg.room() + " > " + msg.left_message().nickname() +
+           " has left the room.";
 }
 
 string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
-    string type = (msg.vote_result_message().type() == client_server::JOIN) ?
-      "been invited to join the chatroom" : "been kicked from the chatroom";
+    string type = (msg.vote_result_message().type() == client_server::JOIN)
+                      ? "been invited to join the chatroom"
+                      : "been kicked from the chatroom";
     string result = (msg.vote_result_message().vote()) ? "not " : "";
     return msg.room() + " > The verdict is in! " +
-      msg.vote_result_message().nickname() + " has " + result + type;
+           msg.vote_result_message().nickname() + " has " + result + type;
 }
 
 string ClientServerAPI::process_msg(client_server::Message &msg) {
     if (msg.has_text_message()) {
         return ClientServerAPI::process_text_msg(msg);
-    }  else if (msg.has_nickname_message()) {
+    } else if (msg.has_nickname_message()) {
         return ClientServerAPI::process_nickname_msg(msg);
     } else if (msg.has_left_message()) {
         return ClientServerAPI::process_left_msg(msg);

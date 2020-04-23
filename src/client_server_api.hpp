@@ -1,8 +1,9 @@
 #ifndef CLIENT_SERVER_API_HPP_
 #define CLIENT_SERVER_API_HPP_
 
-#include <string>
 #include <grpcpp/grpcpp.h>
+
+#include <string>
 
 #include "proto/client_server.grpc.pb.h"
 #include "proto/client_server.pb.h"
@@ -14,7 +15,7 @@ private:
     std::string nickname;
     bool send_message(client_server::Message &msg);
 
-public:
+   public:
     std::shared_ptr<client_server::ChatService::Stub> stub_;
 
     ClientServerAPI(std::shared_ptr<grpc::Channel> channel);
@@ -36,6 +37,5 @@ public:
     std::string process_left_msg(client_server::Message &msg);
     std::string process_vote_result_msg(client_server::Message &msg);
 };
-
 
 #endif /* CLIENT_SERVER_API_HPP_ */
