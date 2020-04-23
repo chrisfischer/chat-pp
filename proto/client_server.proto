@@ -5,6 +5,7 @@ package client_server;
 
 message TextMessage {
     string text = 2;
+    string nickname = 3;
 }
 
 message NicknameMessage {
@@ -28,9 +29,9 @@ message VoteMessage {
 
 message VoteResultMessage {
     bool vote = 3;
-    string message = 4;
     int64 total_number_users = 5;
     bool for_current_user = 6;
+    VoteType tyep = 7;
 }
 
 message StartVoteMessage {
@@ -47,6 +48,7 @@ message Message {
         StartVoteMessage start_vote_message = 4;
         LeftMessage left_message = 5;
         VoteMessage vote_message = 6;
+        VoteResultMessage vote_result_message = 7;
     }
 }
 
