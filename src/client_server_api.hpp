@@ -12,7 +12,6 @@ using namespace std;
 class ClientServerAPI {
 
 private:
-    string room;
     string nickname;
     bool send_message(client_server::Message &msg);
 

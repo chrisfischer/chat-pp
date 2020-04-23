@@ -32,6 +32,7 @@ string prompt_cli(ostream &os, istream &is)
     os << "Welcome to Ĉ++!" << endl;
     os << "In order to get started, please specify the IP address you would like to connect to." << endl << "IP Address:" << endl;
 
+    // localhost:50051
     string serverIP;
     is >> serverIP;
     return serverIP;
@@ -41,9 +42,10 @@ void run_client(ostream &os, istream &is) {
     string addr {prompt_cli(os, is)};
     
     ClientServerAPI csAPI {grpc::CreateChannel(addr, grpc::InsecureChannelCredentials())};
-
+    
     client_server::Message msg;
     shared_ptr<grpc::ClientReader<client_server::Message>> reader {csAPI.get_reader()};
+
     while (reader->Read(&msg)) {
         if (msg.has_start_vote_message()) {
             csAPI.process_start_vote_msg(msg);
