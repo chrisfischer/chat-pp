@@ -31,7 +31,7 @@ message VoteResultMessage {
     bool vote = 3;
     int64 total_number_users = 5;
     bool for_current_user = 6;
-    VoteType tyep = 7;
+    VoteType type = 7;
 }
 
 message StartVoteMessage {
