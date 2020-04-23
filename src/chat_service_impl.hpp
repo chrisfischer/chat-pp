@@ -1,19 +1,24 @@
 #ifndef CLIENT_SERVER_IMPL_HPP_
 #define CLIENT_SERVER_IMPL_HPP_
 
+#include <grpcpp/grpcpp.h>
+
 #include <set>
 #include <vector>
 
-#include <grpcpp/grpcpp.h>
-#include "proto/client_server.grpc.pb.h"
-
 #include "forwarding_service_client.hpp"
+#include "proto/client_server.grpc.pb.h"
 #include "server_state.hpp"
 
 class ChatServiceImpl final : public client_server::ChatService::Service {
    private:
     std::shared_ptr<ServerState> state;
     std::vector<std::unique_ptr<ForwardingServiceClient>> forwarding_clients;
+
+    // Used to handle fowarded messages and non-forwarded
+    void handle_message(const client_server::Message message,
+                        const std::string &sender_addr,
+                        const std::string &room);
 
    public:
     // map from client addr to writer

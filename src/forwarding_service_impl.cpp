@@ -18,12 +18,7 @@ grpc::Status ForwardingServiceImpl::Forward(grpc::ServerContext *context,
                                             client_server::Empty *response) {
     cout << request << endl;
 
-    for (auto addr : state->addrs_in_room(request->message().room())) {
-        if (chat_service->writers.find(addr) != chat_service->writers.end()) {
-            // TODO better way to convert between messages?
-            // chat_service->writers.at(addr)->Write()
-        }
-    }
+
 
     return grpc::Status::OK;
 }

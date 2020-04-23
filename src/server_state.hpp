@@ -48,6 +48,9 @@ class ServerState {
     std::string start_vote(const std::string &room,
                            client_server::VoteType vote_type,
                            const std::string &target_addr);
+
+    // TODO make more efficient
+    std::optional<const std::string> addr_for_nickname(const std::string &nickname);
     std::optional<const std::string> room_for_addr(const std::string &addr);
     const std::set<std::string> &addrs_in_room(const std::string &room);
 };

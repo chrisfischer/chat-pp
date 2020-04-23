@@ -53,6 +53,15 @@ std::string ServerState::start_vote(const std::string &room,
     return vote_id;
 }
 
+std::optional<const std::string> ServerState::addr_for_nickname(const std::string &nickname) {
+    for (auto elt : user2nickname) {
+        if (elt.second == nickname) {
+            return std::optional<std::string> {elt.first};
+        }
+    }
+    return std::nullopt;
+}
+
 std::optional<const std::string> ServerState::room_for_addr(const std::string &addr) {
     if (user2room.find(addr) == user2room.end()) {
         return std::nullopt;
