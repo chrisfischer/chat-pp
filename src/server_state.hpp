@@ -45,14 +45,17 @@ class ServerState {
     void leave_room(const std::string &addr);
     void join_room(const std::string &addr, const std::string &room);
     int update_room_size(const std::string &room, int change);
+
     std::string start_vote(const std::string &room,
                            client_server::VoteType vote_type,
                            const std::string &target_addr);
+    void update_vote(const std::string &vote_id, bool vote_for);
 
     // TODO make more efficient
     std::optional<const std::string> addr_for_nickname(const std::string &nickname);
     std::optional<const std::string> room_for_addr(const std::string &addr);
     const std::set<std::string> &addrs_in_room(const std::string &room);
+    std::optional<const std::string> target_addr_for_vote(const std::string &vote_id);
 };
 
 #endif /* SERVER_STATE_HPP_ */

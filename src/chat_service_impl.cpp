@@ -48,9 +48,22 @@ grpc::Status ChatServiceImpl::SendMessage(
     if (auto room = state->room_for_addr(addr); room) {
         // Normal message
         handle_message(*request, addr, room.value());
-    } else if (request->has_start_vote_message() && !request->room().empty()) {
+    } else if (request->has_start_vote_message()) {
         // Join message
+        if (!request->room().empty()) {
+            std::cerr << "user not in room " << addr << std::endl;
+            return grpc::Status::OK;
+        }
+
         handle_message(*request, addr, request->room());
+
+        // TODO check if room is empty and if so, enter immediately
+    } else if (request->has_vote_message()) {
+        // Prevent counting vote message if sender is target
+        if (auto target_addr = state->target_addr_for_vote(request->vote_message().vote_id());
+                target_addr == context->peer()) {
+            return grpc::Status::OK;
+        }
     } else {
         std::cerr << "user not in room " << addr << std::endl;
     }
@@ -62,6 +75,8 @@ grpc::Status ChatServiceImpl::SendMessage(
 void ChatServiceImpl::handle_message(
     client_server::Message message, const std::string &sender_addr, const std::string &room) {
 
+    message.set_room(room);
+
     // If it is a start vote message, the server who has the target user connected is responsible
     // for maintaining the vote state.
     if (message.has_start_vote_message()) {
@@ -72,6 +87,14 @@ void ChatServiceImpl::handle_message(
             start_vote_message_copy->set_vote_id(vote_id);
             message.set_allocated_start_vote_message(start_vote_message_copy);
         }
+    } else if (message.has_vote_message()) {
+        // TODO, somehow prevent voting more than once?
+
+        state->update_vote(message.vote_message().vote_id(), message.vote_message().vote());
+
+        // TODO check if vote is over
+    } else if (message.has_vote_result_message()) {
+        // TODO Update room sizes
     }
 
     // Send to relevant clients
