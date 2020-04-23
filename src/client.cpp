@@ -1,6 +1,6 @@
-#include <iostream>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include "proto/client_server.grpc.pb.h"
@@ -14,7 +14,7 @@ using namespace std;
  3. user is given list of commands:
     OUTSIDE OF CHATROOM
     1. enter <chatroom>
- 
+
     INSIDE CHATROOM
     1. leave <chatroom>
     2. set nickname <new_nickname>
@@ -22,15 +22,17 @@ using namespace std;
     4. <message>
     5. submit vote <yes/no> <username>
     6.
- 
-    client needs to listen for incoming messages from the server and respond accordingly
-    should have separate messages for
+
+    client needs to listen for incoming messages from the server and respond
+ accordingly should have separate messages for
  */
 
-string prompt_cli(ostream &os, istream &is)
-{
+string prompt_cli(ostream &os, istream &is) {
     os << "Welcome to Ĉ++!" << endl;
-    os << "In order to get started, please specify the IP address you would like to connect to." << endl << "IP Address:" << endl;
+    os << "In order to get started, please specify the IP address you would like "
+          "to connect to."
+       << endl
+       << "IP Address:" << endl;
 
     // localhost:50051
     string serverIP;
@@ -39,12 +41,14 @@ string prompt_cli(ostream &os, istream &is)
 }
 
 void run_client(ostream &os, istream &is) {
-    string addr {prompt_cli(os, is)};
-    
-    ClientServerAPI csAPI {grpc::CreateChannel(addr, grpc::InsecureChannelCredentials())};
-    
+    string addr{prompt_cli(os, is)};
+
+    ClientServerAPI csAPI{
+        grpc::CreateChannel(addr, grpc::InsecureChannelCredentials())};
+
     client_server::Message msg;
-    shared_ptr<grpc::ClientReader<client_server::Message>> reader {csAPI.get_reader()};
+    shared_ptr<grpc::ClientReader<client_server::Message>> reader{
+        csAPI.get_reader()};
 
     while (reader->Read(&msg)) {
         if (msg.has_start_vote_message()) {
@@ -59,9 +63,4 @@ void run_client(ostream &os, istream &is) {
     grpc::Status status = reader->Finish();
 }
 
-
-
-int main()
-{
-    run_client(cout, cin);
-}
+int main() { run_client(cout, cin); }

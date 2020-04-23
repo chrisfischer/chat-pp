@@ -2,64 +2,59 @@ syntax = "proto3";
 
 package client_server;
 
-
 message TextMessage {
-    string text = 2;
-    string nickname = 3;
+  string text = 2;
+  string nickname = 3;
 }
 
 message NicknameMessage {
-    string old_nickname = 2;
-    string new_nickname = 3;
+  string old_nickname = 2;
+  string new_nickname = 3;
 }
 
-message LeftMessage {
-    string nickname = 2;
-}
+message LeftMessage { string nickname = 2; }
 
 enum VoteType {
-    JOIN = 0;
-    KICK = 1;
+  JOIN = 0;
+  KICK = 1;
 }
 
 message VoteMessage {
-    string vote_id = 2;
-    bool vote = 3;
+  string vote_id = 2;
+  bool vote = 3;
 }
 
 message VoteResultMessage {
-    bool vote = 3;
-    int64 total_number_users = 5;
-    bool for_current_user = 6;
-    VoteType type = 7;
-    string nickname = 8;
+  bool vote = 3;
+  int64 total_number_users = 5;
+  bool for_current_user = 6;
+  VoteType type = 7;
+  string nickname = 8;
 }
 
 message StartVoteMessage {
-    string nickname = 2;
-    string vote_id = 3; // Optional
-    VoteType type = 4;
+  string nickname = 2;
+  string vote_id = 3; // Optional
+  VoteType type = 4;
 }
 
 message Message {
-    string room = 1;
-    oneof oneof_message {
-        TextMessage text_message = 2;
-        NicknameMessage nickname_message = 3;
-        StartVoteMessage start_vote_message = 4;
-        LeftMessage left_message = 5;
-        VoteMessage vote_message = 6;
-        VoteResultMessage vote_result_message = 7;
-    }
+  string room = 1;
+  oneof oneof_message {
+    TextMessage text_message = 2;
+    NicknameMessage nickname_message = 3;
+    StartVoteMessage start_vote_message = 4;
+    LeftMessage left_message = 5;
+    VoteMessage vote_message = 6;
+    VoteResultMessage vote_result_message = 7;
+  }
 }
 
-message MessageResult {
-    bool received = 1;
-}
+message MessageResult { bool received = 1; }
 
 message Empty {}
 
 service ChatService {
-    rpc ReceiveMessages(Empty) returns (stream Message) {}
-    rpc SendMessage(Message) returns (MessageResult) {}
+  rpc ReceiveMessages(Empty) returns (stream Message) {}
+  rpc SendMessage(Message) returns (MessageResult) {}
 }
