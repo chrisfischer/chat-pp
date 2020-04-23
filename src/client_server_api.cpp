@@ -23,7 +23,7 @@ bool ClientServerAPI::send_message(client_server::Message &msg) {
     return msgResult.received();
 }
 
-bool ClientServerAPI::send_text(string &text) {
+bool ClientServerAPI::send_text(const string &text) {
     client_server::TextMessage * text_msg = new client_server::TextMessage();
     text_msg->set_text(text);
     
@@ -32,7 +32,7 @@ bool ClientServerAPI::send_text(string &text) {
     return ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::change_nickname(string &new_nickname) {
+bool ClientServerAPI::change_nickname(const string &new_nickname) {
     client_server::NicknameMessage * nn_msg = new client_server::NicknameMessage();
     nn_msg->set_new_nickname(new_nickname);
     
@@ -54,7 +54,7 @@ bool ClientServerAPI::leave_room() {
     return ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::join_room(string &new_room, string &new_nickname) {
+bool ClientServerAPI::join_room(const string &new_room, const string &new_nickname) {
     client_server::StartVoteMessage * sv_msg = new client_server::StartVoteMessage();
     sv_msg->set_nickname(new_nickname);
     
@@ -64,7 +64,7 @@ bool ClientServerAPI::join_room(string &new_room, string &new_nickname) {
     return ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::submit_vote(string &vote_id, bool vote) {
+bool ClientServerAPI::submit_vote(const string &vote_id, bool vote) {
     client_server::VoteMessage * vote_msg = new client_server::VoteMessage();
     vote_msg->set_vote_id(vote_id);
     vote_msg->set_vote(vote);

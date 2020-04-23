@@ -7,33 +7,31 @@
 #include "proto/client_server.grpc.pb.h"
 #include "proto/client_server.pb.h"
 
-using namespace std;
-
 class ClientServerAPI {
 
 private:
-    string nickname;
+    std::string nickname;
     bool send_message(client_server::Message &msg);
 
 public:
-    shared_ptr<client_server::ChatService::Stub> stub_;
+    std::shared_ptr<client_server::ChatService::Stub> stub_;
 
     ClientServerAPI(std::shared_ptr<grpc::Channel> channel);
     
-    shared_ptr<grpc::ClientReader<client_server::Message>> get_reader();
-    bool send_text(string &text);
-    bool change_nickname(string &new_nickname);
+    std::shared_ptr<grpc::ClientReader<client_server::Message>> get_reader();
+    bool send_text(const std::string &text);
+    bool change_nickname(const std::string &new_nickname);
     bool leave_room();
-    bool join_room(string &new_room, string &new_nickname);
-    bool submit_vote(string &vote_id, bool vote);
-    void update_room(string &new_room);
-    string process_msg(client_server::Message &msg);
+    bool join_room(const std::string &new_room, const std::string &new_nickname);
+    bool submit_vote(const std::string &vote_id, bool vote);
+    void update_room(const std::string &new_room);
+    std::string process_msg(client_server::Message &msg);
     
-    string process_text_msg(client_server::Message &msg);
-    string process_nickname_msg(client_server::Message &msg);
-    string process_start_vote_msg(client_server::Message &msg);
-    string process_left_msg(client_server::Message &msg);
-    string process_vote_result_msg(client_server::Message &msg);
+    std::string process_text_msg(client_server::Message &msg);
+    std::string process_nickname_msg(client_server::Message &msg);
+    std::string process_start_vote_msg(client_server::Message &msg);
+    std::string process_left_msg(client_server::Message &msg);
+    std::string process_vote_result_msg(client_server::Message &msg);
 };
 
 
