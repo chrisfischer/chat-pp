@@ -53,6 +53,13 @@ std::string ServerState::start_vote(const std::string &room,
     return vote_id;
 }
 
+std::optional<const std::string> ServerState::room_for_addr(const std::string &addr) {
+    if (user2room.find(addr) == user2room.end()) {
+        return std::nullopt;
+    }
+    return std::optional<std::string> {user2room.at(addr)};
+}
+
 const std::set<std::string> &ServerState::addrs_in_room(
     const std::string &room) {
     return room2users[room];

@@ -17,6 +17,7 @@ cc_library(
     srcs = ["chat_service_impl.cpp"],
     hdrs = ["chat_service_impl.hpp"],
     deps = [
+        ":server_state",
         ":forwarding_service_client",
         "//proto:client_server_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
@@ -29,6 +30,7 @@ cc_library(
     hdrs = ["forwarding_service_client.hpp"],
     linkopts = ["-lpthread"],
     deps = [
+        ":server_state",
         "//proto:client_server_cc_grpc",
         "//proto:server_server_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",

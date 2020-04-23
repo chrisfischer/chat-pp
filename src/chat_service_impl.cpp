@@ -3,13 +3,13 @@
 #include <algorithm>
 #include <iostream>
 
-ChatServiceImpl::ChatServiceImpl(const std::set<std::string> &addrs) {
+ChatServiceImpl::ChatServiceImpl(std::shared_ptr<ServerState> state, const std::set<std::string> &addrs) {
     forwarding_clients.resize(addrs.size());
     std::transform(
         addrs.begin(), addrs.end(), forwarding_clients.begin(),
-        [](std::string addr) -> std::unique_ptr<ForwardingServiceClient> {
+        [&state](std::string addr) -> std::unique_ptr<ForwardingServiceClient> {
             return std::make_unique<ForwardingServiceClient>(
-                grpc::CreateChannel(addr, grpc::InsecureChannelCredentials()));
+                grpc::CreateChannel(addr, grpc::InsecureChannelCredentials()), state);
         });
 }
 
