@@ -27,37 +27,39 @@ using namespace std;
     should have separate messages for
  */
 
-void process_message(string &msg) {
-    
+string prompt_cli(ostream &os, istream &is)
+{
+    os << "Welcome to Ĉ++!" << endl;
+    os << "In order to get started, please specify the IP address you would like to connect to." << endl << "IP Address:" << endl;
+
+    string serverIP;
+    is >> serverIP;
+    return serverIP;
 }
 
-void startClientServer() {
-    ClientServerAPI csAPI {grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials())};
+void run_client(ostream &os, istream &is) {
+    string addr {prompt_cli(os, is)};
+    
+    ClientServerAPI csAPI {grpc::CreateChannel(addr, grpc::InsecureChannelCredentials())};
 
     client_server::Message msg;
     shared_ptr<grpc::ClientReader<client_server::Message>> reader {csAPI.get_reader()};
     while (reader->Read(&msg)) {
-        
+        if (msg.has_start_vote_message()) {
+            csAPI.process_start_vote_msg(msg);
+            string vote;
+            is >> vote;
+            csAPI.submit_vote(msg.start_vote_message().vote_id(), vote == "YES");
+        } else {
+            csAPI.process_msg(msg);
+        }
     }
     grpc::Status status = reader->Finish();
 }
 
-void prompt_cli(ostream &os, istream &is)
-{
-    os << "Welcome to Ĉ++!" << endl;
-    os << "In order to get started, please specify the IP address you would like to connect to." << endl;
-    os << "IP Address:" << endl;
 
-    string serverIP;
-    is >> serverIP;
-    
-    // error message if ip address is incorrect
-    // TODO: decide if we want to exit or use while loop
-    
-    // start up client
-}
 
 int main()
 {
-    prompt_cli(cout, cin);
+    run_client(cout, cin);
 }

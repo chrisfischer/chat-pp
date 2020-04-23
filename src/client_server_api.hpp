@@ -25,10 +25,16 @@ public:
     bool send_text(string &text);
     bool change_nickname(string &new_nickname);
     bool leave_room();
-    bool join_room(string &room, string &new_nickname);
-    bool submit_vote(string &room, string &vote_id, bool vote);
+    bool join_room(string &new_room, string &new_nickname);
+    bool submit_vote(string &vote_id, bool vote);
     void update_room(string &new_room);
     string process_msg(client_server::Message &msg);
+    
+    string process_text_msg(client_server::Message &msg);
+    string process_nickname_msg(client_server::Message &msg);
+    string process_start_vote_msg(client_server::Message &msg);
+    string process_left_msg(client_server::Message &msg);
+    string process_vote_result_msg(client_server::Message &msg);
 };
 
 

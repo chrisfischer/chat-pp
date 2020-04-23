@@ -72,7 +72,7 @@ bool ClientServerAPI::join_room(string &new_room, string &new_nickname) {
     return ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::submit_vote(string &room, string &vote_id, bool vote) {
+bool ClientServerAPI::submit_vote(string &vote_id, bool vote) {
     client_server::VoteMessage vote_msg;
     vote_msg.set_vote_id(vote_id);
     vote_msg.set_vote(vote);
@@ -87,16 +87,40 @@ void ClientServerAPI::update_room(string &new_room) {
     room = new_room;
 }
 
+string ClientServerAPI::process_text_msg(client_server::Message &msg) {
+    return msg.room() + " (" + msg.text_message().nickname() + ") > " + msg.text_message().text();
+}
+
+string ClientServerAPI::process_nickname_msg(client_server::Message &msg) {
+    return msg.room() + " > " + msg.nickname_message().old_nickname() + " has changed their nickname to " + msg.nickname_message().new_nickname() + ".";
+}
+
+string ClientServerAPI::process_start_vote_msg(client_server::Message &msg) {
+    if (msg.start_vote_message().type() == client_server::JOIN) {
+        return msg.room() + " > Please vote on whether to allow " + msg.start_vote_message().nickname() + " to join the chatroom. If you would like to let this person in, respond YES. Otherwise, respond NO. If you do not answer in the designated format your vote will default to a no.";
+    }
+    return msg.room() + " > Please vote on whether to kick " + msg.start_vote_message().nickname() + " from the chatroom. If you would like to kick this person out, respond YES. Otherwise, respond NO. If you do not answer in the designated format your vote will default to a no.";
+}
+
+string ClientServerAPI::process_left_msg(client_server::Message &msg) {
+    return msg.room() + " > " + msg.left_message().nickname() + " has left the room.";
+}
+
+string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
+    string type = (msg.vote_result_message().type() == client_server::JOIN) ? "been invited to join the chatroom" : "been kicked from the chatroom";
+    string result = (msg.vote_result_message().vote()) ? "not " : "";
+    return msg.room() + " > The verdict is in! " + msg.vote_result_message().nickname() + " has " + result + type;
+}
+
 string ClientServerAPI::process_msg(client_server::Message &msg) {
     if (msg.has_text_message()) {
-
-    } else if (msg.has_text_message()) {
-        
-    } else if (msg.has_nickname_message()) {
-        
-    } else if (msg.has_start_vote_message()) {
-        
+        return ClientServerAPI::process_text_msg(msg);
+    }  else if (msg.has_nickname_message()) {
+        return ClientServerAPI::process_nickname_msg(msg);
     } else if (msg.has_left_message()) {
-        
+        return ClientServerAPI::process_left_msg(msg);
+    } else if (msg.has_vote_result_message()) {
+        return ClientServerAPI::process_vote_result_msg(msg);
     }
+    return "ERROR: invalid message";
 }
