@@ -61,7 +61,7 @@ grpc::Status ChatServiceImpl::SendMessage(
     } else if (request->has_vote_message()) {
         // Prevent counting vote message if sender is target
         if (auto target_addr = state->target_addr_for_vote(request->vote_message().vote_id());
-                target_addr == context->peer()) {
+            target_addr == context->peer()) {
             return grpc::Status::OK;
         }
     } else {
@@ -74,7 +74,6 @@ grpc::Status ChatServiceImpl::SendMessage(
 // Copy message on call
 void ChatServiceImpl::handle_message(
     client_server::Message message, const std::string &sender_addr, const std::string &room) {
-
     message.set_room(room);
 
     // If it is a start vote message, the server who has the target user connected is responsible
@@ -83,14 +82,16 @@ void ChatServiceImpl::handle_message(
         if (auto addr = state->addr_for_nickname(message.start_vote_message().nickname()); addr) {
             std::string vote_id = state->start_vote(room, message.start_vote_message().type(), addr.value());
 
-            auto start_vote_message_copy = new client_server::StartVoteMessage {message.start_vote_message()};
+            auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
             start_vote_message_copy->set_vote_id(vote_id);
             message.set_allocated_start_vote_message(start_vote_message_copy);
         }
     } else if (message.has_vote_message()) {
-        // TODO, somehow prevent voting more than once?
-
-        state->update_vote(message.vote_message().vote_id(), message.vote_message().vote());
+        if (!state->set_vote(message.vote_message().vote_id(),
+                             message.vote_message().vote(),
+                             sender_addr)) {
+            return;
+        }
 
         // TODO check if vote is over
     } else if (message.has_vote_result_message()) {

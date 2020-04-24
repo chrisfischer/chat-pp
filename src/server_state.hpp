@@ -22,6 +22,8 @@ class VoteState {
     std::string target_addr;
     int votes_for;
     int votes_against;
+    std::set<std::string> voted_addrs;
+
     VoteState(const std::string &room, client_server::VoteType vote_type,
               const std::string &target_addr);
 };
@@ -49,7 +51,7 @@ class ServerState {
     std::string start_vote(const std::string &room,
                            client_server::VoteType vote_type,
                            const std::string &target_addr);
-    void update_vote(const std::string &vote_id, bool vote_for);
+    bool set_vote(const std::string &vote_id, bool vote_for, const std::string &addr);
 
     // TODO make more efficient
     std::optional<const std::string> addr_for_nickname(const std::string &nickname);

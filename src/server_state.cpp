@@ -53,16 +53,22 @@ std::string ServerState::start_vote(const std::string &room,
     return vote_id;
 }
 
-void ServerState::update_vote(const std::string &vote_id, bool vote_for) {
+bool ServerState::set_vote(const std::string &vote_id, bool vote_for, const std::string &addr) {
     if (votes.find(vote_id) == votes.end()) {
         std::cerr << "Vote not found " << vote_id << std::endl;
-        return;
+        return false;
+    }
+    auto vote_state {votes.at(vote_id)};
+    if (vote_state.voted_addrs.find(addr) != vote_state.voted_addrs.end()) {
+        std::cerr << "Addr already voted " << addr << std::endl;
+        return false;
     }
     if (vote_for) {
-        votes.at(vote_id).votes_for += 1;
+        vote_state.votes_for += 1;
     } else {
-        votes.at(vote_id).votes_against += 1;
+        vote_state.votes_against += 1;
     }
+    return true;
 }
 
 std::optional<const std::string> ServerState::addr_for_nickname(const std::string &nickname) {
