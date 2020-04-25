@@ -15,7 +15,6 @@ ClientServerAPI::ClientServerAPI(
 
 shared_ptr<grpc::ClientReaderWriter<client_server::Message,
   client_server::Message>> ClientServerAPI::start_stream() {
-  grpc::ClientContext context;
 
   shared_ptr<grpc::ClientReaderWriter<client_server::Message,
       client_server::Message>> stream(stub_->ReceiveMessages(&context));

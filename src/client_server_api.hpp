@@ -18,6 +18,7 @@ private:
 
 public:
     std::shared_ptr<client_server::ChatService::Stub> stub_;
+    grpc::ClientContext context;
 
     ClientServerAPI(std::shared_ptr<grpc::Channel> channel);
 
