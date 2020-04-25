@@ -39,10 +39,6 @@ grpc::Status ChatServiceImpl::SendMessage(
     // TODO check for writer first
 
     std::cout << "Impl SendMessage " << context->peer() << std::endl;
-    for (unsigned int i = 0; i < forwarding_clients.size(); i++) {
-        // TODO check if peer is the addr
-        forwarding_clients.at(i)->Forward(context->peer(), *request);
-    }
 
     std::string addr{context->peer()};
     if (auto room = state->room_for_addr(addr); room) {
@@ -51,21 +47,25 @@ grpc::Status ChatServiceImpl::SendMessage(
     } else if (request->has_start_vote_message()) {
         // Join message
         if (!request->room().empty()) {
-            std::cerr << "user not in room " << addr << std::endl;
+            std::cerr << "room not included in request " << addr << std::endl;
             return grpc::Status::OK;
         }
 
         handle_message(*request, addr, request->room());
 
         // TODO check if room is empty and if so, enter immediately
+        // and forward a vote complete message
     } else if (request->has_vote_message()) {
         // Prevent counting vote message if sender is target
         if (auto target_addr = state->target_addr_for_vote(request->vote_message().vote_id());
             target_addr == context->peer()) {
             return grpc::Status::OK;
         }
-    } else {
-        std::cerr << "user not in room " << addr << std::endl;
+    }
+
+    for (unsigned int i = 0; i < forwarding_clients.size(); i++) {
+        // TODO check if peer is the addr
+        forwarding_clients.at(i)->Forward(context->peer(), *request);
     }
 
     return grpc::Status::OK;
@@ -87,19 +87,27 @@ void ChatServiceImpl::handle_message(
             message.set_allocated_start_vote_message(start_vote_message_copy);
         }
     } else if (message.has_vote_message()) {
-        if (!state->set_vote(message.vote_message().vote_id(),
-                             message.vote_message().vote(),
-                             sender_addr)) {
-            return;
-        }
+        auto vote_id = message.vote_message().vote_id();
+        if (state->has_vote(vote_id)) {
+            if (!state->set_vote(vote_id, message.vote_message().vote(), sender_addr)) {
+                // Already voted
+                return;
+            }
 
-        // TODO check if vote is over
+            if (auto complete{state->is_vote_complete(vote_id)}; complete.value()) {
+                // TODO send vote completed message to everyone
+                state->remove_vote(vote_id);
+            }
+        }
     } else if (message.has_vote_result_message()) {
         // TODO Update room sizes
+        state->update_room_size(room, message.vote_result_message().total_number_users());
     }
 
     // Send to relevant clients
     for (auto addr : state->addrs_in_room(room)) {
+        // TODO for vote result, set is for current user
+
         if (writers.find(addr) != writers.end()) {
             writers.at(addr)->Write(message);
         } else {

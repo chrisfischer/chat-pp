@@ -15,11 +15,6 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
     std::shared_ptr<ServerState> state;
     std::vector<std::unique_ptr<ForwardingServiceClient>> forwarding_clients;
 
-    // Used to handle fowarded messages and non-forwarded
-    void handle_message(const client_server::Message message,
-                        const std::string &sender_addr,
-                        const std::string &room);
-
    public:
     // map from client addr to writer
     // std::map<std::string,
@@ -35,6 +30,12 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
     grpc::Status SendMessage(grpc::ServerContext *context,
                              const client_server::Message *request,
                              client_server::MessageResult *response) override;
+
+    // Used to handle fowarded messages and non-forwarded
+    void handle_message(const client_server::Message message,
+                        const std::string &sender_addr,
+                        const std::string &room);
+
 };
 
 #endif /* CLIENT_SERVER_IMPL_HPP_ */

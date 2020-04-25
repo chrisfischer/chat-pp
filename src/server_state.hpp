@@ -37,7 +37,7 @@ class ServerState {
     // map from room number -> set of addrs connected to this server
     std::map<std::string, std::set<std::string>> room2users;
     // map from room number -> size
-    std::map<std::string, int> room2Size;
+    std::map<std::string, unsigned int> room2size;
     // map from vote id -> state for vote
     std::map<std::string, VoteState> votes;
 
@@ -46,7 +46,7 @@ class ServerState {
                                                const std::string &nickname);
     void leave_room(const std::string &addr);
     void join_room(const std::string &addr, const std::string &room);
-    int update_room_size(const std::string &room, int change);
+    unsigned int update_room_size(const std::string &room, int new_size);
 
     std::string start_vote(const std::string &room,
                            client_server::VoteType vote_type,
@@ -57,7 +57,11 @@ class ServerState {
     std::optional<const std::string> addr_for_nickname(const std::string &nickname);
     std::optional<const std::string> room_for_addr(const std::string &addr);
     const std::set<std::string> &addrs_in_room(const std::string &room);
+
+    bool has_vote(const std::string &vote_id);
     std::optional<const std::string> target_addr_for_vote(const std::string &vote_id);
+    std::optional<bool> is_vote_complete(const std::string &vote_id);
+    void remove_vote(const std::string &vote_id);
 };
 
 #endif /* SERVER_STATE_HPP_ */

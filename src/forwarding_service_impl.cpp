@@ -18,7 +18,7 @@ grpc::Status ForwardingServiceImpl::Forward(grpc::ServerContext *context,
                                             client_server::Empty *response) {
     cout << request << endl;
 
-
+    chat_service->handle_message(request->message(), request->sender_id(), request->message().room());
 
     return grpc::Status::OK;
 }

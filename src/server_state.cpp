@@ -35,9 +35,10 @@ void ServerState::join_room(const std::string &addr, const std::string &room) {
     room2users.at(room).insert(addr);
 }
 
-int ServerState::update_room_size(const std::string &room, int change) {
-    room2Size[room] += change;
-    return room2Size[room];
+unsigned int ServerState::update_room_size(const std::string &room, int new_size) {
+    auto prev_size = room2size[room];
+    room2size[room] = new_size;
+    return prev_size;
 }
 
 std::string gen_uuid() {
@@ -58,7 +59,7 @@ bool ServerState::set_vote(const std::string &vote_id, bool vote_for, const std:
         std::cerr << "Vote not found " << vote_id << std::endl;
         return false;
     }
-    auto vote_state {votes.at(vote_id)};
+    auto vote_state{votes.at(vote_id)};
     if (vote_state.voted_addrs.find(addr) != vote_state.voted_addrs.end()) {
         std::cerr << "Addr already voted " << addr << std::endl;
         return false;
@@ -74,7 +75,7 @@ bool ServerState::set_vote(const std::string &vote_id, bool vote_for, const std:
 std::optional<const std::string> ServerState::addr_for_nickname(const std::string &nickname) {
     for (auto elt : user2nickname) {
         if (elt.second == nickname) {
-            return std::optional<std::string> {elt.first};
+            return std::optional<std::string>{elt.first};
         }
     }
     return std::nullopt;
@@ -84,7 +85,7 @@ std::optional<const std::string> ServerState::room_for_addr(const std::string &a
     if (user2room.find(addr) == user2room.end()) {
         return std::nullopt;
     }
-    return std::optional<std::string> {user2room.at(addr)};
+    return std::optional<std::string>{user2room.at(addr)};
 }
 
 const std::set<std::string> &ServerState::addrs_in_room(
@@ -92,9 +93,26 @@ const std::set<std::string> &ServerState::addrs_in_room(
     return room2users[room];
 }
 
+bool ServerState::has_vote(const std::string &vote_id) {
+    return votes.find(vote_id) != votes.end();
+}
+
 std::optional<const std::string> ServerState::target_addr_for_vote(const std::string &vote_id) {
-    if (votes.find(vote_id) == votes.end()) {
+    if (!has_vote(vote_id)) {
         return std::nullopt;
     }
-    return std::optional<std::string> {votes.at(vote_id).target_addr};
+    return std::optional<std::string>{votes.at(vote_id).target_addr};
+}
+
+std::optional<bool> ServerState::is_vote_complete(const std::string &vote_id) {
+    if (!has_vote(vote_id)) {
+        return std::nullopt;
+    }
+    auto vote_state{votes.at(vote_id)};
+    auto room_size{room2size.at(vote_state.room)};
+    return vote_state.votes_for >= (room_size + 1) / 2; // Take the ceiling
+}
+
+void ServerState::remove_vote(const std::string &vote_id) {
+    votes.erase(vote_id);
 }
