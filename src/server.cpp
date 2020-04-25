@@ -120,16 +120,14 @@ void sig_handler(int s) {
     }
 }
 
-void run_server(const string &bind_addr, const set<string> &server_fwd_addrs) {
-    auto server_state{make_shared<ServerState>()};
+void run_server(const string &bind_addr, const set<string> &server_fwd_addrs, shared_ptr<ServerState>server_state) {
     auto chat_service{make_shared<ChatServiceImpl>(server_state, server_fwd_addrs)};
-
-    ForwardingServiceImpl message_service{server_state, chat_service};
+    ForwardingServiceImpl fowarding_service{server_state, chat_service};
     grpc::ServerBuilder builder;
     cout << "run_server " << bind_addr << endl;
     builder.AddListeningPort(bind_addr, grpc::InsecureServerCredentials());
     builder.RegisterService(chat_service.get());
-    builder.RegisterService(&message_service);
+    builder.RegisterService(&fowarding_service);
     server = unique_ptr<grpc::Server>(builder.BuildAndStart());
     server->Wait();
 }
@@ -167,13 +165,17 @@ int main(int argc, char *argv[]) {
     sa.sa_handler = sig_handler;
     sigaction(SIGINT, &sa, NULL);
 
-    thread server_thread{run_server, bind_addr, server_fwd_addrs};
+    auto server_state = make_shared<ServerState>();
+    // {make_shared<ServerState>()};
+    thread server_thread{run_server, bind_addr, server_fwd_addrs, server_state};
 
-    ClientServerAPI chat_service{
+    if (SERVER_NUMBER == 1) {
+        ClientServerAPI chat_service{
         grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
-    // chat_service.get_reader();
-    for (int i = 0; i < 100; i++) {
-        chat_service.change_nickname("chris");
+        // chat_service.get_reader();
+        for (int i = 0; i < 10; i++) {
+            chat_service.change_nickname("chris");
+        }
     }
 
     server_thread.join();

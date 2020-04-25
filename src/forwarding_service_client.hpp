@@ -18,7 +18,8 @@ class ForwardingServiceClient {
    public:
     ForwardingServiceClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<ServerState> state);
     void Forward(const std::string &sender_addr,
-                 const client_server::Message &message);
+                 const client_server::Message &message,
+                 const std::string &room);
 };
 
 #endif /* FORWARDING_SERIVCE_CLIENT_HPP_ */

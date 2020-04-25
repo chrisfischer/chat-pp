@@ -20,8 +20,8 @@ class VoteState {
     std::string room;
     client_server::VoteType vote_type;
     std::string target_addr;
-    int votes_for;
-    int votes_against;
+    unsigned int votes_for;
+    unsigned int votes_against;
     std::set<std::string> voted_addrs;
 
     VoteState(const std::string &room, client_server::VoteType vote_type,
@@ -30,6 +30,8 @@ class VoteState {
 
 class ServerState {
    private:
+    std::unique_ptr<std::mutex> mutex;
+
     // map from addr -> nickname
     std::map<std::string, std::string> user2nickname;
     // map from addr -> current room
@@ -42,6 +44,8 @@ class ServerState {
     std::map<std::string, VoteState> votes;
 
    public:
+    ServerState();
+
     std::optional<std::string> update_nickname(const std::string &addr,
                                                const std::string &nickname);
     void leave_room(const std::string &addr);
@@ -54,12 +58,12 @@ class ServerState {
     bool set_vote(const std::string &vote_id, bool vote_for, const std::string &addr);
 
     // TODO make more efficient
-    std::optional<const std::string> addr_for_nickname(const std::string &nickname);
-    std::optional<const std::string> room_for_addr(const std::string &addr);
+    std::optional<std::string> addr_for_nickname(const std::string &nickname);
+    std::optional<std::string> room_for_addr(const std::string &addr);
     const std::set<std::string> &addrs_in_room(const std::string &room);
 
     bool has_vote(const std::string &vote_id);
-    std::optional<const std::string> target_addr_for_vote(const std::string &vote_id);
+    std::optional<std::string> target_addr_for_vote(const std::string &vote_id);
     std::optional<bool> is_vote_complete(const std::string &vote_id);
     void remove_vote(const std::string &vote_id);
 };

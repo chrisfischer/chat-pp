@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iostream>
 
-ChatServiceImpl::ChatServiceImpl(std::shared_ptr<ServerState> state, const std::set<std::string> &addrs) {
+ChatServiceImpl::ChatServiceImpl(std::shared_ptr<ServerState> state, const std::set<std::string> &addrs) : state{state} {
     forwarding_clients.resize(addrs.size());
     std::transform(
         addrs.begin(), addrs.end(), forwarding_clients.begin(),
@@ -26,6 +26,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
         writer;  // std::shared_ptr<grpc::ServerWriter<client_server::Message>>{writer};
 
     // TODO
+    std::cout << "Infinite loop!" << std::endl;
     while (true) {
     };
     // condition variables?
@@ -41,9 +42,10 @@ grpc::Status ChatServiceImpl::SendMessage(
     std::cout << "Impl SendMessage " << context->peer() << std::endl;
 
     std::string addr{context->peer()};
-    if (auto room = state->room_for_addr(addr); room) {
+    std::string room;
+    if (auto room {state->room_for_addr(addr)}; room) {
         // Normal message
-        handle_message(*request, addr, room.value());
+        room = room.value();
     } else if (request->has_start_vote_message()) {
         // Join message
         if (!request->room().empty()) {
@@ -51,29 +53,48 @@ grpc::Status ChatServiceImpl::SendMessage(
             return grpc::Status::OK;
         }
 
-        handle_message(*request, addr, request->room());
+        room = request->room();
 
         // TODO check if room is empty and if so, enter immediately
         // and forward a vote complete message
-    } else if (request->has_vote_message()) {
+    }
+
+    if (request->has_vote_message()) {
         // Prevent counting vote message if sender is target
         if (auto target_addr = state->target_addr_for_vote(request->vote_message().vote_id());
             target_addr == context->peer()) {
             return grpc::Status::OK;
         }
+
     }
 
-    for (unsigned int i = 0; i < forwarding_clients.size(); i++) {
-        // TODO check if peer is the addr
-        forwarding_clients.at(i)->Forward(context->peer(), *request);
-    }
+    handle_message(*context, *request, room);
 
     return grpc::Status::OK;
 }
 
 // Copy message on call
-void ChatServiceImpl::handle_message(
-    client_server::Message message, const std::string &sender_addr, const std::string &room) {
+void ChatServiceImpl::handle_message(const grpc::ServerContext &context, 
+                                     const client_server::Message &request,
+                                     const std::string &room) {
+    forward(context, request, room);
+    handle_forwarded_message(request, context.peer(), room);
+}
+
+
+void ChatServiceImpl::forward(const grpc::ServerContext &context,
+                              const client_server::Message &request,
+                              const std::string &room) {
+    // TODO change to foreach + functional
+    for (unsigned int i = 0; i < forwarding_clients.size(); i++) {
+        forwarding_clients.at(i)->Forward(context.peer(), request, room);
+    }
+}
+
+void ChatServiceImpl::handle_forwarded_message(client_server::Message message, 
+                                               const std::string &sender_addr,
+                                               const std::string &room) {
+
     message.set_room(room);
 
     // If it is a start vote message, the server who has the target user connected is responsible
@@ -94,13 +115,14 @@ void ChatServiceImpl::handle_message(
                 return;
             }
 
-            if (auto complete{state->is_vote_complete(vote_id)}; complete.value()) {
-                // TODO send vote completed message to everyone
+            if (auto complete{state->is_vote_complete(vote_id)}; complete) {
                 state->remove_vote(vote_id);
+
+                // TODO send vote completed message to everyone
+                bool result = complete.value();
             }
         }
     } else if (message.has_vote_result_message()) {
-        // TODO Update room sizes
         state->update_room_size(room, message.vote_result_message().total_number_users());
     }
 

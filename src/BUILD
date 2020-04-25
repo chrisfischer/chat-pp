@@ -6,6 +6,7 @@ cc_library(
     name = "server_state",
     srcs = ["server_state.cpp"],
     hdrs = ["server_state.hpp"],
+    linkopts = ["-lpthread"],
     deps = [
         "//proto:client_server_cc_grpc",
         "@boost//:uuid",
