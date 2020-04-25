@@ -17,11 +17,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
     grpc::ServerContext* context, 
     grpc::ServerReaderWriter<client_server::Message, client_server::Message>* stream) {
 
-    std::cout << "impl ReceiveMessages" << context->client_metadata().size();
-    for (auto elt : context->client_metadata()) {
-        std::cout << "Impl ReceiveMessages " << elt.first << " " << elt.second
-                  << std::endl;
-    }
+    std::cout << "impl ReceiveMessages\n";
 
     writers[context->peer()] =
         stream;  // std::shared_ptr<grpc::ServerWriter<client_server::Message>>{writer};

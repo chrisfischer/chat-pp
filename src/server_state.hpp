@@ -73,6 +73,8 @@ class ServerState {
     bool has_vote(const std::string &vote_id) const;
     std::optional<VoteState> get_vote(const std::string &vote_id) const;
     std::optional<bool> is_vote_complete(const std::string &vote_id) const;
+
+    friend std::ostream& operator<<(std::ostream& os, const ServerState& state);
 };
 
 #endif /* SERVER_STATE_HPP_ */
