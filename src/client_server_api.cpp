@@ -9,80 +9,72 @@
 
 using namespace std;
 
-ClientServerAPI::ClientServerAPI(std::shared_ptr<grpc::Channel> channel)
-  : stub_(client_server::ChatService::NewStub(channel)) {}
+ClientServerAPI::ClientServerAPI(
+  std::shared_ptr<grpc::Channel> channel) : stub_(
+    client_server::ChatService::NewStub(channel)), stream(start_stream()) {}
 
-shared_ptr<grpc::ClientReader<client_server::Message>>
-ClientServerAPI::get_reader() {
+shared_ptr<grpc::ClientReaderWriter<client_server::Message,
+  client_server::Message>> ClientServerAPI::start_stream() {
   grpc::ClientContext context;
 
-  shared_ptr<grpc::ClientReader<client_server::Message>> reader(
-      stub_->ReceiveMessages(&context, client_server::Empty()));
-  return reader;
+  shared_ptr<grpc::ClientReaderWriter<client_server::Message,
+      client_server::Message>> stream(stub_->ReceiveMessages(&context));
+  return stream;
+}
+
+shared_ptr<grpc::ClientReaderWriter<client_server::Message,
+  client_server::Message>> ClientServerAPI::get_stream() {
+
+  return stream;
 }
 
 bool ClientServerAPI::in_room() {
   return room.compare("");
 }
 
-bool ClientServerAPI::send_message(client_server::Message &msg) {
-    client_server::MessageResult msgResult;
-    grpc::ClientContext context;
-    grpc::Status status = stub_->SendMessage(&context, msg, &msgResult);
-    return msgResult.received();
+void ClientServerAPI::send_message(client_server::Message &msg) {
+    stream->Write(msg);
 }
 
-bool ClientServerAPI::send_text(const string &text) {
+void ClientServerAPI::send_text(const string &text) {
     client_server::TextMessage *text_msg = new client_server::TextMessage();
     text_msg->set_text(text);
 
     client_server::Message msg;
     msg.set_allocated_text_message(text_msg);
-    return ClientServerAPI::send_message(msg);
+    ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::change_nickname(const string &new_nickname) {
+void ClientServerAPI::change_nickname(const string &new_nickname) {
     client_server::NicknameMessage *nn_msg =
       new client_server::NicknameMessage();
     nn_msg->set_new_nickname(new_nickname);
 
     client_server::Message msg;
     msg.set_allocated_nickname_message(nn_msg);
-    bool received = ClientServerAPI::send_message(msg);
-    if (received) {
-        nickname = new_nickname;
-    }
-    return received;
+    ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::leave_room() {
+void ClientServerAPI::leave_room() {
     client_server::LeftMessage *left_msg = new client_server::LeftMessage();
     left_msg->set_nickname(nickname);
 
     client_server::Message msg;
     msg.set_allocated_left_message(left_msg);
-    bool received = ClientServerAPI::send_message(msg);
-    if (received) {
-        room = "";
-    }
-    return ClientServerAPI::send_message(msg);
+    ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::join_room(const string &new_room) {
+void ClientServerAPI::join_room(const string &new_room) {
     client_server::StartVoteMessage *sv_msg =
         new client_server::StartVoteMessage();
 
     client_server::Message msg;
     msg.set_allocated_start_vote_message(sv_msg);
     msg.set_room(new_room);
-    bool received = ClientServerAPI::send_message(msg);
-    if (received) {
-        room = new_room;
-    }
-    return received;
+    ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::kick(const string &nickname) {
+void ClientServerAPI::kick(const string &nickname) {
     client_server::StartVoteMessage * sv_msg =
       new client_server::StartVoteMessage();
     sv_msg->set_type(client_server::KICK);
@@ -90,17 +82,17 @@ bool ClientServerAPI::kick(const string &nickname) {
 
     client_server::Message msg;
     msg.set_allocated_start_vote_message(sv_msg);
-    return ClientServerAPI::send_message(msg);
+    ClientServerAPI::send_message(msg);
 }
 
-bool ClientServerAPI::submit_vote(const string &vote_id, bool vote) {
+void ClientServerAPI::submit_vote(const string &vote_id, bool vote) {
     client_server::VoteMessage *vote_msg = new client_server::VoteMessage();
     vote_msg->set_vote_id(vote_id);
     vote_msg->set_vote(vote);
 
     client_server::Message msg;
     msg.set_allocated_vote_message(vote_msg);
-    return ClientServerAPI::send_message(msg);
+    ClientServerAPI::send_message(msg);
 }
 
 string ClientServerAPI::process_text_msg(client_server::Message &msg) {

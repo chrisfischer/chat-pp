@@ -51,22 +51,21 @@ string prompt_cli()
 
 void listen_to_server(ClientServerAPI& csAPI) {
   client_server::Message msg;
-  shared_ptr<grpc::ClientReader<client_server::Message>> reader
-    {csAPI.get_reader()};
+  shared_ptr<grpc::ClientReaderWriter<client_server::Message,
+    client_server::Message>> stream {csAPI.get_stream()};
 
-  while (reader->Read(&msg)) {
+  while (stream->Read(&msg)) {
     if (msg.has_start_vote_message()) {
       csAPI.process_start_vote_msg(msg);
-      m.lock();
+      scoped_lock l {m};
       string vote;
       cin >> vote;
-      m.unlock();
       csAPI.submit_vote(msg.start_vote_message().vote_id(), vote == "YES");
     } else {
       csAPI.process_msg(msg);
     }
   }
-  grpc::Status status = reader->Finish();
+  grpc::Status status = stream->Finish();
 }
 
 void parse_input(string &input, ClientServerAPI& csAPI) {
