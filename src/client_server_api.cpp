@@ -57,7 +57,6 @@ void ClientServerAPI::change_nickname(const string &new_nickname) {
 
 void ClientServerAPI::leave_room() {
     client_server::LeftMessage *left_msg = new client_server::LeftMessage();
-    left_msg->set_nickname(nickname);
 
     client_server::Message msg;
     msg.set_allocated_left_message(left_msg);
@@ -101,9 +100,9 @@ string ClientServerAPI::process_text_msg(client_server::Message &msg) {
 }
 
 string ClientServerAPI::process_nickname_msg(client_server::Message &msg) {
-    return msg.room() + " > " + msg.nickname_message().old_nickname() +
-      " has changed their nickname to " +
-      msg.nickname_message().new_nickname() + ".";
+  return msg.room() + " > " + msg.nickname_message().old_nickname() +
+    " has changed their nickname to " +
+    msg.nickname_message().new_nickname() + ".";
 }
 
 string ClientServerAPI::process_start_vote_msg(client_server::Message &msg) {
@@ -122,15 +121,18 @@ string ClientServerAPI::process_start_vote_msg(client_server::Message &msg) {
 }
 
 string ClientServerAPI::process_left_msg(client_server::Message &msg) {
+  if(msg.left_message().for_current_user()) {
+    room = "";
+  }
   return msg.room() + " > " + msg.left_message().nickname() +
          " has left the room.";
 }
 
 string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
   if (msg.vote_result_message().for_current_user()) {
-    room = (msg.vote_result_message().type() == client_server::JOIN)
-                ? msg.room()
-                : "";
+    bool in_room = (msg.vote_result_message().type() == client_server::JOIN) ==
+      msg.vote_result_message().vote();
+    room = (in_room) ? msg.room() : "";
   }
   string user = (msg.vote_result_message().for_current_user())
                     ? "You have "
@@ -138,7 +140,7 @@ string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
   string type = (msg.vote_result_message().type() == client_server::JOIN)
                     ? "been invited to join " + msg.room()
                     : "been kicked from the chatroom" + msg.room();
-  string result = (msg.vote_result_message().vote()) ? "not " : "";
+  string result = (msg.vote_result_message().vote()) ? "" : "not";
   return msg.room() + " > The verdict is in! " + user + result + type;
 }
 
