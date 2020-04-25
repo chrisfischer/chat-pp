@@ -31,17 +31,16 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
     client_server::Message read_message;
     while (stream->Read(&read_message)) {
         // TODO async
-        SendMessage(context, &read_message);
+        handle_message(context, &read_message);
     };
-    // condition variables?
+    
 
     return grpc::Status::OK;
 }
 
-grpc::Status ChatServiceImpl::SendMessage(
-    grpc::ServerContext *context, const client_server::Message *request) {
-    // TODO check for writer first
-
+void ChatServiceImpl::handle_message(grpc::ServerContext *context, 
+                                     const client_server::Message *request) {
+    
     std::cout << "Impl SendMessage " << context->peer() << std::endl;
 
     std::string addr{context->peer()};
@@ -53,7 +52,7 @@ grpc::Status ChatServiceImpl::SendMessage(
         // Join message
         if (!request->room().empty()) {
             std::cerr << "room not included in request " << addr << std::endl;
-            return grpc::Status::OK;
+            return;
         }
 
         room = request->room();
@@ -63,22 +62,13 @@ grpc::Status ChatServiceImpl::SendMessage(
         // Prevent counting vote message if sender is target
         if (auto opt_vote_state = state->get_vote(request->vote_message().vote_id());
             opt_vote_state && opt_vote_state.value().target_addr == context->peer()) {
-            return grpc::Status::OK;
+            return;
         }
 
     }
 
-    handle_message(*context, *request, room);
-
-    return grpc::Status::OK;
-}
-
-// Copy message on call
-void ChatServiceImpl::handle_message(const grpc::ServerContext &context, 
-                                     const client_server::Message &request,
-                                     const std::string &room) {
-    forward(context, request, room);
-    handle_forwarded_message(request, context.peer(), room);
+    forward(*context, *request, room);
+    handle_forwarded_message(*request, context->peer(), room);
 }
 
 
@@ -157,15 +147,16 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                     auto vote_result_message = new client_server::VoteResultMessage();
                     vote_result_message->set_vote(vote_result);
                     vote_result_message->set_nickname(nickname.value());
-                    vote_result_message->set_total_number_users(total_number_users.value());
+                    vote_result_message->set_total_number_users(new_size);
                     
                     completed_message.set_room(room);
                     completed_message.set_allocated_vote_result_message(vote_result_message);
 
-                    // TODO just pass in sender_addr directly, right now it'd be empty?
                     grpc::ServerContext context;
                     // TODO async?
-                    handle_message(context, completed_message, room);
+                    // TODO bring into separate function
+                    forward(context, completed_message, room);
+                    handle_forwarded_message(completed_message, "", room);
 
                     state->remove_vote(vote_id);
                 } else {
