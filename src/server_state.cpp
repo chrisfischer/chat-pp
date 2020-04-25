@@ -19,12 +19,10 @@ ServerState::ServerState() : mutex{std::make_unique<std::mutex>()} {}
 std::optional<std::string> ServerState::update_nickname(const std::string &addr, 
                                                         const std::string &nickname) {
     std::scoped_lock lock{*mutex};
-    if (user2nickname.find(addr) == user2nickname.end()) {
-        return std::nullopt;
-    }
-    std::string temp = user2nickname.at(addr);
+    bool exists = user2nickname.find(addr) == user2nickname.end();
+    std::string temp = user2nickname[addr];
     user2nickname[addr] = nickname;
-    return std::optional<std::string>{temp};
+    return exists ? std::optional<std::string>{temp} : std::nullopt;
 }
 
 void ServerState::leave_room(const std::string &addr) {
@@ -133,7 +131,7 @@ std::optional<std::string> ServerState::room_for_addr(const std::string &addr) c
 
 const std::set<std::string> &ServerState::addrs_in_room(const std::string &room) {
     std::scoped_lock lock{*mutex};
-    return room2users.at(room);
+    return room2users[room];
 }
 
 bool ServerState::has_vote(const std::string &vote_id) const {

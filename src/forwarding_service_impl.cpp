@@ -17,7 +17,12 @@ grpc::Status ForwardingServiceImpl::Forward(grpc::ServerContext *context,
                                             const SS::ForwardedMessage *request,
                                             client_server::Empty *response) {
     cout << "Received forward from " << context->peer() << endl;
-    chat_service->handle_forwarded_message(request->message(), request->sender_id(), request->message().room());
+    chat_service->handle_forwarded_message(request->message(), 
+                                           request->sender_id(), 
+                                           request->message().room(),
+                                           true);
+
+    std::cout << "Finished handling forwarded message\n";
 
     return grpc::Status::OK;
 }

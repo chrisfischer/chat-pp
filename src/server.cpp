@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
     auto server_state = make_shared<ServerState>();
     // {make_shared<ServerState>()};
     thread server_thread{run_server, bind_addr, server_fwd_addrs, server_state};
-
+    sleep(2);
     if (SERVER_NUMBER == 1) {
         ClientServerAPI chat_service{
         grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
@@ -177,7 +177,10 @@ int main(int argc, char *argv[]) {
             chat_service.change_nickname("chris" + to_string(i));
             cout << *server_state;
         }
+        server_thread.join();
+    } else {
+        server_thread.join();
     }
 
-    server_thread.join();
+    
 }

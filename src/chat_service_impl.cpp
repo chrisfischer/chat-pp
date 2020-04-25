@@ -64,7 +64,10 @@ void ChatServiceImpl::handle_message(grpc::ServerContext *context,
     }
 
     forward(*context, *request, room);
-    handle_forwarded_message(*request, context->peer(), room);
+    handle_forwarded_message(*request, context->peer(), room, false);
+    
+    std::cout << "Finished handling client message\n";
+    std::cout << *state;
 }
 
 
@@ -79,7 +82,8 @@ void ChatServiceImpl::forward(const grpc::ServerContext &context,
 
 void ChatServiceImpl::handle_forwarded_message(client_server::Message message, 
                                                const std::string &sender_addr,
-                                               const std::string &room) {
+                                               const std::string &room,
+                                               bool forwarded) {
 
     message.set_room(room);
 
@@ -112,6 +116,10 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         }
     } else if (message.has_vote_result_message()) {
         state->set_room_size(room, message.vote_result_message().total_number_users());
+    } else if (message.has_nickname_message()) {
+        if (!forwarded) {
+            state->update_nickname(sender_addr, message.nickname_message().new_nickname());
+        }
     }
 
     // Send to relevant clients
@@ -152,7 +160,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                     // TODO async?
                     // TODO bring into separate function
                     forward(context, completed_message, room);
-                    handle_forwarded_message(completed_message, "", room);
+                    handle_forwarded_message(completed_message, "", room, false);
 
                     state->remove_vote(vote_id);
                 } else {
