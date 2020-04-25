@@ -16,14 +16,15 @@ private:
     std::shared_ptr<grpc::ClientReaderWriter<client_server::Message,
       client_server::Message>> stream;
 
+    std::shared_ptr<grpc::ClientReaderWriter<client_server::Message,
+      client_server::Message>>start_stream();
+
 public:
     std::shared_ptr<client_server::ChatService::Stub> stub_;
     grpc::ClientContext context;
 
     ClientServerAPI(std::shared_ptr<grpc::Channel> channel);
 
-    std::shared_ptr<grpc::ClientReaderWriter<client_server::Message,
-      client_server::Message>>start_stream();
     std::shared_ptr<grpc::ClientReaderWriter<client_server::Message,
       client_server::Message>> get_stream();
     bool in_room();

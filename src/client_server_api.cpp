@@ -11,7 +11,9 @@ using namespace std;
 
 ClientServerAPI::ClientServerAPI(
   std::shared_ptr<grpc::Channel> channel) : stub_(
-    client_server::ChatService::NewStub(channel)), stream(start_stream()) {}
+    client_server::ChatService::NewStub(channel)) {
+    stream = start_stream();
+  }
 
 shared_ptr<grpc::ClientReaderWriter<client_server::Message,
   client_server::Message>> ClientServerAPI::start_stream() {
