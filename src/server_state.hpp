@@ -50,22 +50,29 @@ class ServerState {
                                                const std::string &nickname);
     void leave_room(const std::string &addr);
     void join_room(const std::string &addr, const std::string &room);
-    unsigned int update_room_size(const std::string &room, int new_size);
+    // Returns old size
+    unsigned int set_room_size(const std::string &room, unsigned int new_size);
+    // // Returns new size
+    // unsigned int update_room_size(const std::string &room, int change);
 
     std::string start_vote(const std::string &room,
                            client_server::VoteType vote_type,
                            const std::string &target_addr);
     bool set_vote(const std::string &vote_id, bool vote_for, const std::string &addr);
-
-    // TODO make more efficient
-    std::optional<std::string> addr_for_nickname(const std::string &nickname);
-    std::optional<std::string> room_for_addr(const std::string &addr);
-    const std::set<std::string> &addrs_in_room(const std::string &room);
-
-    bool has_vote(const std::string &vote_id);
-    std::optional<std::string> target_addr_for_vote(const std::string &vote_id);
-    std::optional<bool> is_vote_complete(const std::string &vote_id);
     void remove_vote(const std::string &vote_id);
+
+    std::optional<unsigned int> get_room_size(const std::string &room) const;
+    // TODO make more efficient
+    std::optional<std::string> addr_for_nickname(const std::string &nickname) const;
+    std::optional<std::string> nickname_for_addr(const std::string &addr) const;
+
+    std::optional<std::string> room_for_addr(const std::string &addr) const;
+    const std::set<std::string> &addrs_in_room(const std::string &room); // TODO should this be const?
+
+    // Does this sever contain state on the given vote_id
+    bool has_vote(const std::string &vote_id) const;
+    std::optional<VoteState> get_vote(const std::string &vote_id) const;
+    std::optional<bool> is_vote_complete(const std::string &vote_id) const;
 };
 
 #endif /* SERVER_STATE_HPP_ */

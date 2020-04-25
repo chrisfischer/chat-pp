@@ -14,7 +14,7 @@
 #include "server_state.hpp"
 
 // TODO remove
-#include "client_server_api.hpp"
+// #include "client_server_api.hpp"
 
 using namespace std;
 
@@ -169,14 +169,14 @@ int main(int argc, char *argv[]) {
     // {make_shared<ServerState>()};
     thread server_thread{run_server, bind_addr, server_fwd_addrs, server_state};
 
-    if (SERVER_NUMBER == 1) {
-        ClientServerAPI chat_service{
-        grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
-        // chat_service.get_reader();
-        for (int i = 0; i < 10; i++) {
-            chat_service.change_nickname("chris");
-        }
-    }
+    // if (SERVER_NUMBER == 1) {
+    //     ClientServerAPI chat_service{
+    //     grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
+    //     chat_service.get_reader();
+    //     for (int i = 0; i < 10; i++) {
+    //         chat_service.change_nickname("chris");
+    //     }
+    // }
 
     server_thread.join();
 }

@@ -28,17 +28,16 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
     // map from client addr to writer
     // std::map<std::string,
     // std::shared_ptr<grpc::ServerWriter<client_server::Message>>> writers;
-    std::map<std::string, grpc::ServerWriter<client_server::Message> *> writers;
+    std::map<std::string, grpc::ServerReaderWriter<client_server::Message, client_server::Message> *> writers;
 
     ChatServiceImpl(std::shared_ptr<ServerState> state, const std::set<std::string> &fwd_addrs);
 
     grpc::Status ReceiveMessages(
-        grpc::ServerContext *context, const client_server::Empty *request,
-        grpc::ServerWriter<client_server::Message> *writer) override;
+        grpc::ServerContext* context, 
+        grpc::ServerReaderWriter<client_server::Message, client_server::Message>* stream) override;
 
     grpc::Status SendMessage(grpc::ServerContext *context,
-                             const client_server::Message *request,
-                             client_server::MessageResult *response) override;
+                             const client_server::Message *request);
 
     // Used to handle forawrd messages from other servers
     void handle_forwarded_message(client_server::Message message,

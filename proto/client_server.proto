@@ -55,6 +55,6 @@ message MessageResult { bool received = 1; }
 message Empty {}
 
 service ChatService {
-  rpc ReceiveMessages(Empty) returns (stream Message) {}
-  rpc SendMessage(Message) returns (MessageResult) {}
+  rpc ReceiveMessages(stream Message) returns (stream Message) {}
+  // rpc SendMessage(Message) returns (MessageResult) {}
 }

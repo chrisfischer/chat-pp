@@ -41,6 +41,7 @@ void ForwardingServiceClient::Forward(const std::string &sender_addr,
     grpc::ClientContext context;
     // stub_->AsyncForward(&context, request, &cq);
 
+    // TODO make this async
     client_server::Empty response;
     stub_->Forward(&context, request, &response);
 
