@@ -41,7 +41,7 @@ message StartVoteMessage {
 
 message Message {
   string room = 1;
-  bool for_current_user = 2;
+  bool for_current_user = 8;
   oneof oneof_message {
     TextMessage text_message = 2;
     NicknameMessage nickname_message = 3;
