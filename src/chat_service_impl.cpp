@@ -91,12 +91,13 @@ void ChatServiceImpl::handle_message(client_server::Message message,
             return;
         }
     } else if (message.has_nickname_message()) {
-        // TODO get old nickname
         auto nickname_message = new client_server::NicknameMessage{message.nickname_message()};
         nickname_message->set_old_nickname(state->nickname_for_addr(sender_addr));
+        message.set_allocated_nickname_message(nickname_message);
     } else if (message.has_text_message()) {
         auto text_message = new client_server::TextMessage{message.text_message()};
         text_message->set_nickname(state->nickname_for_addr(sender_addr));
+        message.set_allocated_text_message(text_message);
     }
 
     forward(message, sender_addr, room);
@@ -192,25 +193,18 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     for (auto addr : state->addrs_in_room(room)) {
         std::cout << "\t" + addr << std::endl;
 
-        // TODO does this actually work
-        if (!forwarded && sender_addr == addr && 
-                (message.has_left_message() || 
-                    message.has_vote_result_message() ||
-                    message.has_nickname_message())) {
-            message.set_for_current_user(true);
-        }
+        bool for_current_user =
+            !forwarded &&
+            sender_addr == addr &&
+            (message.has_left_message() ||
+                message.has_vote_result_message() ||
+                message.has_nickname_message());
+        message.set_for_current_user(for_current_user);
 
         if (writers.find(addr) != writers.end()) {
             writers.at(addr)->Write(message);
         } else {
             std::cerr << "writer not found " << addr << std::endl;
-        }
-
-        if (!forwarded && sender_addr == addr &&
-                (message.has_left_message() || 
-                    message.has_vote_result_message() ||
-                    message.has_nickname_message())) {
-            message.set_for_current_user(false);
         }
     }
 
