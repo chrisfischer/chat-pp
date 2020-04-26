@@ -26,13 +26,8 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
     client_server::Message read_message;
     while (stream->Read(&read_message)) {
         // TODO async
-<<<<<<< HEAD
-        handle_message(context, &read_message);
-    };
-=======
         handle_message(read_message, sender_addr);
     };    
->>>>>>> Fix kick forwarding issue
 
     std::cout << "Leaving ReceiveMessages\n";
     writers.erase(sender_addr);
@@ -40,17 +35,10 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
     return grpc::Status::OK;
 }
 
-<<<<<<< HEAD
-void ChatServiceImpl::handle_message(grpc::ServerContext *context,
-                                     const client_server::Message *request) {
-
-    std::cout << "Handling client message " << context->peer() << std::endl;
-=======
 void ChatServiceImpl::handle_message(client_server::Message message,
                                      const std::string &sender_addr) {
     
     std::cout << "Handling client message " << sender_addr << std::endl;
->>>>>>> Fix kick forwarding issue
 
     std::string room;
     if (auto opt_room {state->room_for_addr(sender_addr)}; opt_room) {
@@ -153,7 +141,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                 start_vote_message_copy->set_vote_id(vote_id);
                 message.set_allocated_start_vote_message(start_vote_message_copy);
             }
-<<<<<<< HEAD
 
         } else if (auto addr = state->addr_for_nickname(message.start_vote_message().nickname()); addr) {
             // TODO combine with the above
@@ -162,8 +149,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
             start_vote_message_copy->set_vote_id(vote_id);
             message.set_allocated_start_vote_message(start_vote_message_copy);
-=======
->>>>>>> Fix kick forwarding issue
         }
     } else if (message.has_vote_message()) {
         vote_id = message.vote_message().vote_id();
@@ -241,12 +226,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
     if (send_completed_vote) {
         std::cout << "Sending completed vote\n";
-<<<<<<< HEAD
-        // TODO the target addr only matters for this server, but currently we'd have to
-        // find the current user by nickname which is not ideal
-=======
->>>>>>> Fix kick forwarding issue
-
         if (auto opt_vote_state{state->get_vote(vote_id)}; opt_vote_state) {
             auto vote_state{opt_vote_state.value()};
 
