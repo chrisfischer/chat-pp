@@ -59,10 +59,9 @@ void listen_to_server(ClientServerAPI& csAPI) {
       cout << csAPI.process_start_vote_msg(msg) << endl;
       scoped_lock l {m};
       string vote;
-      cin >> vote;
-      cout << vote;
+      getline(cin, vote);
+      // cout << vote << endl;
       csAPI.submit_vote(msg.start_vote_message().vote_id(), vote == "YES");
-      cout << "vote";
     } else {
       cout << csAPI.process_msg(msg) << endl;
     }
