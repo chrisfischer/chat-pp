@@ -19,13 +19,13 @@ class VoteState {
    public:
     std::string room;
     client_server::VoteType vote_type;
-    std::string target_addr;
+    std::string target_nickname;
     unsigned int votes_for;
     unsigned int votes_against;
     std::set<std::string> voted_addrs;
 
     VoteState(const std::string &room, client_server::VoteType vote_type,
-              const std::string &target_addr);
+              const std::string &target_nickname);
 };
 
 class ServerState {
@@ -46,12 +46,13 @@ class ServerState {
    public:
     ServerState();
 
-    std::optional<std::string> update_nickname(const std::string &addr,
-                                               const std::string &nickname);
+    const std::string &set_nickname(const std::string &addr,
+                                    const std::string &nickname);
     void leave_room(const std::string &addr);
     // Leave room if equals given room
     void leave_room_if(const std::string &addr, const std::string &room);
     void join_room(const std::string &addr, const std::string &room);
+    void remove_user(const std::string &addr);
     // Returns old size
     unsigned int set_room_size(const std::string &room, unsigned int new_size);
     // // Returns new size

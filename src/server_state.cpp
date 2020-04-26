@@ -7,42 +7,44 @@
 #include <boost/uuid/uuid_io.hpp>
 
 VoteState::VoteState(const std::string &room, client_server::VoteType vote_type,
-                     const std::string &target_addr)
+                     const std::string &target_nickname)
     : room{room},
       vote_type{vote_type},
-      target_addr{target_addr},
+      target_nickname{target_nickname},
       votes_for{0},
       votes_against{0} {}
 
 ServerState::ServerState() : mutex{std::make_unique<std::mutex>()} {}
 
-std::optional<std::string> ServerState::update_nickname(const std::string &addr, 
-                                                        const std::string &nickname) {
+const std::string &ServerState::set_nickname(const std::string &addr, 
+                                             const std::string &nickname) {
     std::scoped_lock lock{*mutex};
     bool exists = user2nickname.find(addr) == user2nickname.end();
     std::string temp = user2nickname[addr];
     user2nickname[addr] = nickname;
-    return exists ? std::optional<std::string>{temp} : std::nullopt;
+    return exists ? temp : addr;
 }
 
 void ServerState::leave_room(const std::string &addr) {
     std::scoped_lock lock{*mutex};
-    if (user2nickname.find(addr) == user2nickname.end()) {
+    if (user2room.find(addr) == user2room.end()) {
         return;
     }
     std::string room = user2room.at(addr);
+    user2room.erase(addr);
     room2users.at(room).erase(addr);
 }
 
 void ServerState::leave_room_if(const std::string &addr, const std::string &room) {
     std::scoped_lock lock{*mutex};
-    if (user2nickname.find(addr) == user2nickname.end()) {
+    if (user2room.find(addr) == user2room.end()) {
         return;
     }
     std::string curr_room = user2room.at(addr);
     if (room != curr_room) {
         return;
     }
+    user2room.erase(addr);
     room2users.at(room).erase(addr);
 }
 
@@ -50,6 +52,12 @@ void ServerState::join_room(const std::string &addr, const std::string &room) {
     std::scoped_lock lock{*mutex};
     user2room[addr] = room;
     room2users.at(room).insert(addr);
+}
+
+void ServerState::remove_user(const std::string &addr) {
+    leave_room(addr);
+    std::scoped_lock lock{*mutex};
+    user2nickname.erase(addr);
 }
 
 unsigned int ServerState::set_room_size(const std::string &room, unsigned int new_size) {
