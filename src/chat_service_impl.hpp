@@ -37,7 +37,7 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
 
     // Used to handle forawrd messages from other servers
     void handle_forwarded_message(client_server::Message message,
-                                  const std::string &sender_addr,
+                                  std::string sender_addr,
                                   const std::string &room,
                                   bool forwarded);
 
