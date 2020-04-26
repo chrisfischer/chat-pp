@@ -126,6 +126,7 @@ string ClientServerAPI::process_start_vote_msg(client_server::Message &msg) {
 string ClientServerAPI::process_left_msg(client_server::Message &msg) {
   if(msg.for_current_user()) {
     room = "";
+    nickname = "";
   }
   return msg.room() + " > " + msg.left_message().nickname() +
          " has left the room.";
@@ -136,6 +137,7 @@ string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
     bool in_room = (msg.vote_result_message().type() == client_server::JOIN) ==
       msg.vote_result_message().vote();
     room = (in_room) ? msg.room() : "";
+    nickname = (in_room) ? nickname : "";
   }
   string user = (msg.for_current_user())
                     ? "You have "
