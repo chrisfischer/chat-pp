@@ -49,7 +49,7 @@ string prompt_cli()
   return serverIP;
 }
 
-void listen_to_server(ClientServerAPI& csAPI) {
+void listen_to_server(ClientServerAPI& csAPI, bool& vote_flag, string& vote_result) {
   client_server::Message msg;
   shared_ptr<grpc::ClientReaderWriter<client_server::Message,
     client_server::Message>> stream {csAPI.get_stream()};
@@ -58,11 +58,9 @@ void listen_to_server(ClientServerAPI& csAPI) {
     cout << csAPI.process_msg(msg) << endl;
     if (msg.has_start_vote_message()) {
       cout << csAPI.process_start_vote_msg(msg) << endl;
-      scoped_lock l {m};
-      string vote;
-      getline(cin, vote);
-      // cout << vote << endl;
-      csAPI.submit_vote(msg.start_vote_message().vote_id(), vote == "YES");
+      vote_result = 1;
+      cout << vote_result << "vote_result" << endl;
+      csAPI.submit_vote(msg.start_vote_message().vote_id(), vote_result == "YES");
     } else {
       cout << csAPI.process_msg(msg) << endl;
     }
@@ -93,9 +91,13 @@ void parse_input(string &input, ClientServerAPI& csAPI) {
   }
 }
 
-void listen_to_user(ClientServerAPI& csAPI) {
+void listen_to_user(ClientServerAPI& csAPI, bool& vote_flag, string& vote_result) {
   string user_input;
   while(getline(cin, user_input)) {
+    if (vote_flag) {
+      parse_input(vote_result, csAPI);
+      vote_flag = 0;
+    }
     parse_input(user_input, csAPI);
   }
 }
@@ -106,8 +108,10 @@ void run_client() {
   ClientServerAPI csAPI {
     grpc::CreateChannel("localhost:8000", grpc::InsecureChannelCredentials())};
 
-  thread serverThread {listen_to_server, ref(csAPI)};
-  thread userThread {listen_to_user, ref(csAPI)};
+  bool vote_flag;
+  string vote_result;
+  thread serverThread {listen_to_server, ref(csAPI), ref(vote_flag), ref(vote_result)};
+  thread userThread {listen_to_user, ref(csAPI), ref(vote_flag), ref(vote_result)};
 
   serverThread.join();
   userThread.join();
