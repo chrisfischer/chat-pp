@@ -100,6 +100,7 @@ string ClientServerAPI::process_text_msg(client_server::Message &msg) {
 }
 
 string ClientServerAPI::process_nickname_msg(client_server::Message &msg) {
+  cout << msg.nickname_message().old_nickname() << "old" << endl;
   if (msg.for_current_user()) {
     nickname = msg.nickname_message().new_nickname();
   }
