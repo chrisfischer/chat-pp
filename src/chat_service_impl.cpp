@@ -63,7 +63,7 @@ void ChatServiceImpl::handle_message(client_server::Message message,
 
     if (message.has_start_vote_message()) {
         auto type{message.start_vote_message().type()};
-        if (type == client_server::VoteType::JOIN){
+        if (type == client_server::VoteType::JOIN) {
             // Must specify room
             if (message.room().empty()) {
                 std::cerr << "room not included in request " << sender_addr << std::endl;
@@ -237,6 +237,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     // Put this after so target receives confirmation
     if (message.has_left_message()) {
         state->leave_room(sender_addr);
+        state->decr_room_size(room);
     }
 
     if (send_completed_vote) {

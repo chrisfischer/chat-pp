@@ -68,6 +68,12 @@ unsigned int ServerState::set_room_size(const std::string &room, unsigned int ne
     return prev_size;
 }
 
+unsigned int ServerState::decr_room_size(const std::string &room) {
+    std::scoped_lock lock{*mutex};
+    room2size[room] -= 1;
+    return room2size[room];
+}
+
 std::string gen_uuid() {
     boost::uuids::uuid uuid = boost::uuids::random_generator()();
     return boost::uuids::to_string(uuid);

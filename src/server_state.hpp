@@ -55,6 +55,7 @@ class ServerState {
     void remove_user(const std::string &addr);
     // Returns old size
     unsigned int set_room_size(const std::string &room, unsigned int new_size);
+    unsigned int decr_room_size(const std::string &room);
 
     std::string start_vote(const std::string &room,
                            client_server::VoteType vote_type,
