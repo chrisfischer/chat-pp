@@ -58,7 +58,7 @@ void listen_to_server(ClientServerAPI& csAPI, bool& vote_flag, string& vote_resu
       vote_flag = 1;
       while(vote_flag){};
       csAPI.submit_vote(msg.start_vote_message().vote_id(), vote_result == "YES");
-    } else {
+    } else if (!msg.has_vote_message() || msg.for_current_user()) {
       cout << csAPI.process_msg(msg) << endl;
     }
   }
