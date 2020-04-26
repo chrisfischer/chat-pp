@@ -62,15 +62,17 @@ void ChatServiceImpl::handle_message(client_server::Message message,
     }
 
     if (message.has_start_vote_message()) {
-        // Must specify room
-        if (message.room().empty()) {
-            std::cerr << "room not included in request " << sender_addr << std::endl;
-            return;
-        }
         auto type{message.start_vote_message().type()};
-        if (type == client_server::VoteType::JOIN && state->get_room(sender_addr)) {
-            std::cerr << "already in room " << sender_addr << std::endl;
-            return;
+        if (type == client_server::VoteType::JOIN){
+            // Must specify room
+            if (message.room().empty()) {
+                std::cerr << "room not included in request " << sender_addr << std::endl;
+                return;
+            }
+            if (state->get_room(sender_addr)) {
+                std::cerr << "already in room " << sender_addr << std::endl;
+                return;
+            }
         }
         // Must specify nickname on kick
         if (type == client_server::VoteType::KICK) {
