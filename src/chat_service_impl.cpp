@@ -19,65 +19,92 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
     std::cout << "impl ReceiveMessages\n";
 
-    writers[context->peer()] = stream;
+    auto sender_addr{context->peer()};
+    // TODO add lock
+    writers[sender_addr] = stream;
 
     client_server::Message read_message;
     while (stream->Read(&read_message)) {
         // TODO async
+<<<<<<< HEAD
         handle_message(context, &read_message);
     };
+=======
+        handle_message(read_message, sender_addr);
+    };    
+>>>>>>> Fix kick forwarding issue
 
     std::cout << "Leaving ReceiveMessages\n";
+    writers.erase(sender_addr);
+
     return grpc::Status::OK;
 }
 
+<<<<<<< HEAD
 void ChatServiceImpl::handle_message(grpc::ServerContext *context,
                                      const client_server::Message *request) {
 
     std::cout << "Handling client message " << context->peer() << std::endl;
+=======
+void ChatServiceImpl::handle_message(client_server::Message message,
+                                     const std::string &sender_addr) {
+    
+    std::cout << "Handling client message " << sender_addr << std::endl;
+>>>>>>> Fix kick forwarding issue
 
-    std::string addr{context->peer()};
     std::string room;
-    if (auto opt_room {state->room_for_addr(addr)}; opt_room) {
+    if (auto opt_room {state->room_for_addr(sender_addr)}; opt_room) {
         // Normal message
         room = opt_room.value();
     } else {
-        room = request->room();
+        room = message.room();
     }
 
-    if (request->has_start_vote_message()) {
+    if (message.has_start_vote_message()) {
         // Must specify room
-        if (request->room().empty()) {
-            std::cerr << "room not included in request " << addr << std::endl;
+        if (message.room().empty()) {
+            std::cerr << "room not included in request " << sender_addr << std::endl;
             return;
         }
-        if (request->start_vote_message().type() == client_server::VoteType::JOIN && state->get_room(addr)) {
-            std::cerr << "already in room " << addr << std::endl;
+        if (message.start_vote_message().type() == client_server::VoteType::JOIN && state->get_room(sender_addr)) {
+            std::cerr << "already in room " << sender_addr << std::endl;
             return;
         }
         // Must specify nickname on kick
-        if (request->start_vote_message().type() == client_server::VoteType::KICK) {
-            if (request->start_vote_message().nickname().empty()) {
-                std::cerr << "nickname not included in request " << addr << std::endl;
+        if (message.start_vote_message().type() == client_server::VoteType::KICK) {
+            if (message.start_vote_message().nickname().empty()) {
+                std::cerr << "nickname not included in request " << sender_addr << std::endl;
                 return;
             }
-            if (request->start_vote_message().nickname() == state->nickname_for_addr(context->peer())) {
-                std::cerr << "cannot vote to kick yourself " << addr << std::endl;
+            if (message.start_vote_message().nickname() == state->nickname_for_addr(sender_addr)) {
+                std::cerr << "cannot vote to kick yourself " << sender_addr << std::endl;
                 return;
             }
         }
 
-    } else if (request->has_vote_message()) {
+        // TODO only copy message if necessary
+        auto vote_id = state->start_vote(room, message.start_vote_message().type(), sender_addr);
+
+        auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
+        start_vote_message_copy->set_vote_id(vote_id);
+        start_vote_message_copy->set_nickname(state->nickname_for_addr(sender_addr));
+        message.set_allocated_start_vote_message(start_vote_message_copy);
+
+    } else if (message.has_vote_message()) {
         // Prevent counting vote message if sender is target
-        if (auto opt_vote_state = state->get_vote(request->vote_message().vote_id());
-            opt_vote_state && opt_vote_state.value().target_addr == context->peer()) {
+        if (auto opt_vote_state = state->get_vote(message.vote_message().vote_id());
+            opt_vote_state && opt_vote_state.value().target_addr == sender_addr) {
             return;
         }
+    } else if (message.has_nickname_message()) {
+        // TODO get old nickname
+        auto nickname_message = new client_server::NicknameMessage{message.nickname_message()};
+        nickname_message->set_old_nickname(state->nickname_for_addr(sender_addr));
     }
 
-    forward(*request, addr, room);
-    handle_forwarded_message(*request, addr, room, false);
-
+    forward(message, sender_addr, room);
+    handle_forwarded_message(message, sender_addr, room, false);
+    
     std::cout << "Finished handling client message\n";
     std::cout << *state;
 }
@@ -108,19 +135,25 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     // If it is a start vote message, the server who has the target user connected is responsible
     // for maintaining the vote state.
     if (message.has_start_vote_message()) {
+        // TODO any time we are changing the message here, it is only being fowarded to that server's clients
+
         if (!forwarded) {
-            vote_id = state->start_vote(room, message.start_vote_message().type(), sender_addr);
-
-            auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
-            start_vote_message_copy->set_vote_id(vote_id);
-            start_vote_message_copy->set_nickname(state->nickname_for_addr(sender_addr));
-            message.set_allocated_start_vote_message(start_vote_message_copy);
-
             if (message.start_vote_message().type() == client_server::VoteType::JOIN &&
                     state->get_room_size(room) == 0) {
                 send_completed_vote = true;
                 vote_result = true;
+                vote_id = message.start_vote_message().vote_id();
             }
+        } else {
+            if (auto addr = state->addr_for_nickname(message.start_vote_message().nickname()); addr) {
+                // TODO combine with the above
+                std::string vote_id = state->start_vote(room, message.start_vote_message().type(), addr.value());
+
+                auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
+                start_vote_message_copy->set_vote_id(vote_id);
+                message.set_allocated_start_vote_message(start_vote_message_copy);
+            }
+<<<<<<< HEAD
 
         } else if (auto addr = state->addr_for_nickname(message.start_vote_message().nickname()); addr) {
             // TODO combine with the above
@@ -129,6 +162,8 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
             start_vote_message_copy->set_vote_id(vote_id);
             message.set_allocated_start_vote_message(start_vote_message_copy);
+=======
+>>>>>>> Fix kick forwarding issue
         }
     } else if (message.has_vote_message()) {
         vote_id = message.vote_message().vote_id();
@@ -166,12 +201,15 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
     // Send to relevant clients
 
+    // TODO avoid copying message unless necessary
     client_server::LeftMessage *left_message = nullptr;
     client_server::VoteResultMessage *vote_result_message = nullptr;
 
+    // TODO send rejection if join unsuccessful
     for (auto addr : state->addrs_in_room(room)) {
         std::cout << "\t" + addr << std::endl;
 
+        // TODO does this actually work
         if (!forwarded && sender_addr == addr) {
             if (message.has_left_message()) {
                 left_message = new client_server::LeftMessage{message.left_message()};
@@ -185,8 +223,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                 message.set_allocated_vote_result_message(for_current);
             }
         }
-
-        // TODO for vote result, set is for current user
 
         if (writers.find(addr) != writers.end()) {
             writers.at(addr)->Write(message);
@@ -203,12 +239,13 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         }
     }
 
-    // TODO send vote completed message to everyone
-    // TODO if room size is 0 also send
     if (send_completed_vote) {
         std::cout << "Sending completed vote\n";
+<<<<<<< HEAD
         // TODO the target addr only matters for this server, but currently we'd have to
         // find the current user by nickname which is not ideal
+=======
+>>>>>>> Fix kick forwarding issue
 
         if (auto opt_vote_state{state->get_vote(vote_id)}; opt_vote_state) {
             auto vote_state{opt_vote_state.value()};
