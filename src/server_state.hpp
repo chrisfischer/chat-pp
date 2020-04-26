@@ -32,15 +32,15 @@ class ServerState {
    private:
     std::unique_ptr<std::mutex> mutex;
 
-    // map from addr -> nickname
+    // Map from addr -> nickname, if an entry exists then the user is currently connected
     std::map<std::string, std::string> user2nickname;
-    // map from addr -> current room
+    // Map from addr -> current room
     std::map<std::string, std::string> user2room;
-    // map from room number -> set of addrs connected to this server
+    // Map from room number -> set of addrs connected to this server
     std::map<std::string, std::set<std::string>> room2users;
-    // map from room number -> size
+    // Map from room number -> size
     std::map<std::string, unsigned int> room2size;
-    // map from vote id -> state for vote
+    // Map from vote id -> state for vote
     std::map<std::string, VoteState> votes;
 
    public:
@@ -55,8 +55,6 @@ class ServerState {
     void remove_user(const std::string &addr);
     // Returns old size
     unsigned int set_room_size(const std::string &room, unsigned int new_size);
-    // // Returns new size
-    // unsigned int update_room_size(const std::string &room, int change);
 
     std::string start_vote(const std::string &room,
                            client_server::VoteType vote_type,
@@ -73,9 +71,9 @@ class ServerState {
     std::optional<std::string> get_room(const std::string &addr) const; 
 
     std::optional<std::string> room_for_addr(const std::string &addr) const;
-    const std::set<std::string> &addrs_in_room(const std::string &room); // TODO should this be const?
+    const std::set<std::string> &addrs_in_room(const std::string &room);
 
-    // Does this sever contain state on the given vote_id
+    // Whether this sever contain state on the given vote_id
     bool has_vote(const std::string &vote_id) const;
     std::optional<VoteState> get_vote(const std::string &vote_id) const;
     std::optional<bool> is_vote_complete(const std::string &vote_id) const;

@@ -91,6 +91,10 @@ void ChatServiceImpl::handle_message(client_server::Message message,
             return;
         }
     } else if (message.has_nickname_message()) {
+        if (!state->get_room(sender_addr)) {
+            std::cerr << "cannot change nickname unless in a room " << sender_addr << std::endl;
+            return;
+        }
         auto nickname_message = new client_server::NicknameMessage{message.nickname_message()};
         nickname_message->set_old_nickname(state->nickname_for_addr(sender_addr));
         message.set_allocated_nickname_message(nickname_message);
@@ -169,6 +173,8 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         std::cout << *state;
         state->set_room_size(room, message.vote_result_message().total_number_users());
 
+        // TODO can get out of vote by just changing your nickname
+        // save is_in_vote in state for this user?
         if (auto addr = state->addr_for_nickname(message.vote_result_message().nickname()); addr) {
             if (message.vote_result_message().type() == client_server::VoteType::JOIN) {
                 state->join_room(addr.value(), message.room());
@@ -193,12 +199,15 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     for (auto addr : state->addrs_in_room(room)) {
         std::cout << "\t" + addr << std::endl;
 
-        bool for_current_user =
-            !forwarded &&
-            sender_addr == addr &&
-            (message.has_left_message() ||
-                message.has_vote_result_message() ||
+        // TODO clean up
+        bool for_current_user = !forwarded && sender_addr == addr &&
+            (message.has_left_message() || message.has_vote_result_message() ||
                 message.has_nickname_message());
+        if (message.has_vote_result_message()) {
+            if (auto target_addr = state->addr_for_nickname(message.vote_result_message().nickname()); target_addr) {
+                for_current_user = for_current_user || target_addr.value() == addr;
+            }
+        }
         message.set_for_current_user(for_current_user);
 
         if (writers.find(addr) != writers.end()) {

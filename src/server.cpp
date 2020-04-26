@@ -49,8 +49,8 @@ int parse_config_file(const string &file_name, int server_number,
     while (infile >> line) {
         string ipport = line;
 
-        string ip = ipport.substr(0, ipport.find(":"));
-        int port = atoi(ipport.substr(ipport.find(":") + 1, ipport.size()).c_str());
+        // string ip = ipport.substr(0, ipport.find(":"));
+        // int port = atoi(ipport.substr(ipport.find(":") + 1, ipport.size()).c_str());
 
         if (server_number == count) {
             bind_addr = line.substr(0, line.size());
@@ -171,10 +171,22 @@ int main(int argc, char *argv[]) {
     sleep(2);
     if (SERVER_NUMBER == 1) {
         ClientServerAPI chat_service{
-        grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
+            grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
         // chat_service.start_stream();
-        // chat_service.change_nickname("chris" + to_string(i));
         chat_service.join_room("room1");
+        chat_service.change_nickname("chris0");
+        chat_service.change_nickname("chris1");
+
+        auto stream{chat_service.get_stream()};
+        client_server::Message message;
+        while(stream->Read(&message)) {
+            cout << message.has_nickname_message() << endl;
+            if (message.has_nickname_message()) {
+                cout << message.nickname_message().old_nickname() << endl;
+                cout << message.nickname_message().new_nickname() << endl;
+            }
+        }
+
         // for (int i = 0; i < 10; i++) {
             
         //     cout << *server_state;
