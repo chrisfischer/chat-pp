@@ -56,13 +56,13 @@ void listen_to_server(ClientServerAPI& csAPI) {
 
   while (stream->Read(&msg)) {
     if (msg.has_start_vote_message()) {
-      csAPI.process_start_vote_msg(msg);
+      cout << csAPI.process_start_vote_msg(msg) << endl;
       scoped_lock l {m};
       string vote;
       cin >> vote;
       csAPI.submit_vote(msg.start_vote_message().vote_id(), vote == "YES");
     } else {
-      csAPI.process_msg(msg);
+      cout << csAPI.process_msg(msg) << endl;
     }
   }
   grpc::Status status = stream->Finish();
@@ -101,7 +101,7 @@ void run_client() {
   string addr {prompt_cli()};
 
   ClientServerAPI csAPI {
-    grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials())};
+    grpc::CreateChannel("localhost:8000", grpc::InsecureChannelCredentials())};
 
   thread serverThread {listen_to_server, ref(csAPI)};
   thread userThread {listen_to_user, ref(csAPI)};

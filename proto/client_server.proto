@@ -14,7 +14,6 @@ message NicknameMessage {
 
 message LeftMessage {
   string nickname = 2;
-  bool for_current_user = 3;
 }
 
 enum VoteType {
@@ -30,7 +29,6 @@ message VoteMessage {
 message VoteResultMessage {
   bool vote = 3;
   int64 total_number_users = 5;
-  bool for_current_user = 6;
   VoteType type = 7;
   string nickname = 8;
 }
@@ -43,6 +41,7 @@ message StartVoteMessage {
 
 message Message {
   string room = 1;
+  bool for_current_user = 2;
   oneof oneof_message {
     TextMessage text_message = 2;
     NicknameMessage nickname_message = 3;

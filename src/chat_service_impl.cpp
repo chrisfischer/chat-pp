@@ -14,7 +14,7 @@ ChatServiceImpl::ChatServiceImpl(std::shared_ptr<ServerState> state, const std::
 }
 
 grpc::Status ChatServiceImpl::ReceiveMessages(
-    grpc::ServerContext* context, 
+    grpc::ServerContext* context,
     grpc::ServerReaderWriter<client_server::Message, client_server::Message>* stream) {
 
     std::cout << "impl ReceiveMessages\n";
@@ -25,15 +25,15 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
     while (stream->Read(&read_message)) {
         // TODO async
         handle_message(context, &read_message);
-    };    
+    };
 
     std::cout << "Leaving ReceiveMessages\n";
     return grpc::Status::OK;
 }
 
-void ChatServiceImpl::handle_message(grpc::ServerContext *context, 
+void ChatServiceImpl::handle_message(grpc::ServerContext *context,
                                      const client_server::Message *request) {
-    
+
     std::cout << "Handling client message " << context->peer() << std::endl;
 
     std::string addr{context->peer()};
@@ -77,7 +77,7 @@ void ChatServiceImpl::handle_message(grpc::ServerContext *context,
 
     forward(*request, addr, room);
     handle_forwarded_message(*request, addr, room, false);
-    
+
     std::cout << "Finished handling client message\n";
     std::cout << *state;
 }
@@ -93,7 +93,7 @@ void ChatServiceImpl::forward(const client_server::Message &message,
     }
 }
 
-void ChatServiceImpl::handle_forwarded_message(client_server::Message message, 
+void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                                                const std::string &sender_addr,
                                                const std::string &room,
                                                bool forwarded) {
@@ -121,7 +121,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                 send_completed_vote = true;
                 vote_result = true;
             }
-        
+
         } else if (auto addr = state->addr_for_nickname(message.start_vote_message().nickname()); addr) {
             // TODO combine with the above
             std::string vote_id = state->start_vote(room, message.start_vote_message().type(), addr.value());
@@ -207,22 +207,22 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     // TODO if room size is 0 also send
     if (send_completed_vote) {
         std::cout << "Sending completed vote\n";
-        // TODO the target addr only matters for this server, but currently we'd have to 
+        // TODO the target addr only matters for this server, but currently we'd have to
         // find the current user by nickname which is not ideal
-        
+
         if (auto opt_vote_state{state->get_vote(vote_id)}; opt_vote_state) {
             auto vote_state{opt_vote_state.value()};
-            
+
             auto total_number_users{state->get_room_size(room)};
-            auto new_size = total_number_users + 
+            auto new_size = total_number_users +
                 (vote_state.vote_type == client_server::VoteType::JOIN ? 1 : -1);
-            
+
             client_server::Message completed_message;
             auto vote_result_message = new client_server::VoteResultMessage();
             vote_result_message->set_vote(vote_result);
             vote_result_message->set_total_number_users(new_size);
             vote_result_message->set_nickname(state->nickname_for_addr(vote_state.target_addr));
-            
+
             completed_message.set_room(room);
             completed_message.set_allocated_vote_result_message(vote_result_message);
 
