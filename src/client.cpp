@@ -60,7 +60,9 @@ void listen_to_server(ClientServerAPI& csAPI) {
       scoped_lock l {m};
       string vote;
       cin >> vote;
+      cout << vote;
       csAPI.submit_vote(msg.start_vote_message().vote_id(), vote == "YES");
+      cout << "vote";
     } else {
       cout << csAPI.process_msg(msg) << endl;
     }
