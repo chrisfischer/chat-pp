@@ -140,15 +140,22 @@ string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
   string user = (msg.for_current_user())
                     ? "You have "
                     : msg.vote_result_message().nickname() + " has ";
-  string type = (msg.vote_result_message().type() == client_server::JOIN)
-                    ? "been invited to join " + msg.room()
-                    : "been kicked from the chatroom" + msg.room();
+  string type = ((msg.vote_result_message().type() == client_server::JOIN)
+                    ? "been invited to join "
+                    : "been kicked from ")
+                    + msg.room() + ".";
   string result = (msg.vote_result_message().vote()) ? "" : "not";
   return msg.room() + " > The verdict is in! " + user + result + type;
 }
 
 string ClientServerAPI::process_vote_msg(client_server::Message &msg) {
-  return msg.room() + " > Your vote is in. Thanks!";
+  if (!msg.for_current_user()) {
+    return msg.room() + " > Your vote is in. Thanks!";
+  }
+}
+
+string ClientServerAPI::process_getting_kicked_msg(client_server::Message &msg) {
+  return msg.room() + " > Your chatroom is voting on whether to kick you :(";
 }
 
 string ClientServerAPI::process_msg(client_server::Message &msg) {
@@ -162,6 +169,8 @@ string ClientServerAPI::process_msg(client_server::Message &msg) {
         return ClientServerAPI::process_vote_result_msg(msg);
     } else if (msg.has_vote_message()) {
         return ClientServerAPI::process_vote_msg(msg);
+    } else if (msg.has_start_vote_message()) {
+        return ClientServerAPI::process_getting_kicked_msg(msg);
     }
     return "ERROR: invalid message";
 }

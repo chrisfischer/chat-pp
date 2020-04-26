@@ -53,7 +53,7 @@ void listen_to_server(ClientServerAPI& csAPI, bool& vote_flag, string& vote_resu
     client_server::Message>> stream {csAPI.get_stream()};
 
   while (stream->Read(&msg)) {
-    if (msg.has_start_vote_message()) {
+    if (msg.has_start_vote_message() && !msg.for_current_user()) {
       cout << csAPI.process_start_vote_msg(msg) << endl;
       vote_flag = 1;
       while(vote_flag){};

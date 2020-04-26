@@ -238,6 +238,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             vote_result_message->set_vote(vote_result);
             vote_result_message->set_total_number_users(new_size);
             vote_result_message->set_nickname(vote_state.target_nickname);
+            vote_result_message->set_type(vote_state.vote_type);
 
             client_server::Message completed_message;
             completed_message.set_room(room);
