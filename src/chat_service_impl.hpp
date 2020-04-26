@@ -16,8 +16,8 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
     std::vector<std::unique_ptr<ForwardingServiceClient>> forwarding_clients;
 
     // Used to handle non-forwarded
-    void handle_message(grpc::ServerContext *context,
-                        const client_server::Message *request);
+    void handle_message(client_server::Message request,
+                        const std::string &sender_addr);
     void forward(const client_server::Message &request,
                  const std::string &sender_addr,
                  const std::string &room);
