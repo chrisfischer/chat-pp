@@ -45,5 +45,7 @@ void ForwardingServiceClient::Forward(const std::string &sender_addr,
     client_server::Empty response;
     stub_->Forward(&context, request, &response);
 
+    cout << "Done Forwarding\n";
+
     return;
 }

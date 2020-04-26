@@ -17,9 +17,9 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
 
     // Used to handle non-forwarded
     void handle_message(grpc::ServerContext *context,
-                                const client_server::Message *request);
-    void forward(const grpc::ServerContext &context, 
-                 const client_server::Message &request,
+                        const client_server::Message *request);
+    void forward(const client_server::Message &request,
+                 const std::string &sender_addr,
                  const std::string &room);
 
 

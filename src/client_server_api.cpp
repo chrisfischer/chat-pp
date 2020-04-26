@@ -47,8 +47,7 @@ void ClientServerAPI::send_text(const string &text) {
 }
 
 void ClientServerAPI::change_nickname(const string &new_nickname) {
-    client_server::NicknameMessage *nn_msg =
-      new client_server::NicknameMessage();
+    client_server::NicknameMessage *nn_msg = new client_server::NicknameMessage();
     nn_msg->set_new_nickname(new_nickname);
 
     client_server::Message msg;
@@ -65,8 +64,8 @@ void ClientServerAPI::leave_room() {
 }
 
 void ClientServerAPI::join_room(const string &new_room) {
-    client_server::StartVoteMessage *sv_msg =
-        new client_server::StartVoteMessage();
+    client_server::StartVoteMessage *sv_msg = new client_server::StartVoteMessage();
+    sv_msg->set_type(client_server::VoteType::JOIN);
 
     client_server::Message msg;
     msg.set_allocated_start_vote_message(sv_msg);

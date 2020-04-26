@@ -34,6 +34,18 @@ void ServerState::leave_room(const std::string &addr) {
     room2users.at(room).erase(addr);
 }
 
+void ServerState::leave_room_if(const std::string &addr, const std::string &room) {
+    std::scoped_lock lock{*mutex};
+    if (user2nickname.find(addr) == user2nickname.end()) {
+        return;
+    }
+    std::string curr_room = user2room.at(addr);
+    if (room != curr_room) {
+        return;
+    }
+    room2users.at(room).erase(addr);
+}
+
 void ServerState::join_room(const std::string &addr, const std::string &room) {
     std::scoped_lock lock{*mutex};
     user2room[addr] = room;
@@ -93,10 +105,10 @@ void ServerState::remove_vote(const std::string &vote_id) {
 
 // const functions
 
-std::optional<unsigned int> ServerState::get_room_size(const std::string &room) const {
+unsigned int ServerState::get_room_size(const std::string &room) const {
     std::scoped_lock lock{*mutex};
     if (room2size.find(room) == room2size.end()) {
-        return std::nullopt;
+        return 0;
     }
     return room2size.at(room);
 }
@@ -112,17 +124,24 @@ std::optional<std::string> ServerState::addr_for_nickname(const std::string &nic
     return std::nullopt;
 }
 
-std::optional<std::string> ServerState::nickname_for_addr(const std::string &addr) const {
+const std::string &ServerState::nickname_for_addr(const std::string &addr) const {
     std::scoped_lock lock{*mutex};
     if (user2nickname.find(addr) == user2nickname.end()) {
+        return addr;
+    }
+    return user2nickname.at(addr);
+}
+
+std::optional<std::string> ServerState::get_room(const std::string &addr) const {
+    std::scoped_lock lock{*mutex};
+    if (user2room.find(addr) == user2room.end()) {
         return std::nullopt;
     }
-    return std::optional<std::string>{user2nickname.at(addr)};
+    return user2room.at(addr);
 }
 
 std::optional<std::string> ServerState::room_for_addr(const std::string &addr) const {
     std::scoped_lock lock{*mutex};
-    // std::cout << "room_for_addr " << addr << std::endl;
     if (user2room.find(addr) == user2room.end()) {
         return std::nullopt;
     }
@@ -140,18 +159,18 @@ bool ServerState::has_vote(const std::string &vote_id) const {
 }
 
 std::optional<VoteState> ServerState::get_vote(const std::string &vote_id) const {
-    std::scoped_lock lock{*mutex};
     if (!has_vote(vote_id)) {
         return std::nullopt;
     }
+    std::scoped_lock lock{*mutex};
     return std::optional<VoteState>{votes.at(vote_id)};
 }
 
 std::optional<bool> ServerState::is_vote_complete(const std::string &vote_id) const {
-    std::scoped_lock lock{*mutex};
     if (!has_vote(vote_id)) {
         return std::nullopt;
     }
+    std::scoped_lock lock{*mutex};
     auto vote_state{votes.at(vote_id)};
     auto room_size{room2size.at(vote_state.room)};
     auto target_number_votes{(room_size + 1) / 2};

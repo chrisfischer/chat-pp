@@ -49,6 +49,8 @@ class ServerState {
     std::optional<std::string> update_nickname(const std::string &addr,
                                                const std::string &nickname);
     void leave_room(const std::string &addr);
+    // Leave room if equals given room
+    void leave_room_if(const std::string &addr, const std::string &room);
     void join_room(const std::string &addr, const std::string &room);
     // Returns old size
     unsigned int set_room_size(const std::string &room, unsigned int new_size);
@@ -61,10 +63,13 @@ class ServerState {
     bool set_vote(const std::string &vote_id, bool vote_for, const std::string &addr);
     void remove_vote(const std::string &vote_id);
 
-    std::optional<unsigned int> get_room_size(const std::string &room) const;
+    unsigned int get_room_size(const std::string &room) const;
     // TODO make more efficient
     std::optional<std::string> addr_for_nickname(const std::string &nickname) const;
-    std::optional<std::string> nickname_for_addr(const std::string &addr) const;
+    // Returns addr if none found
+    const std::string &nickname_for_addr(const std::string &addr) const;
+
+    std::optional<std::string> get_room(const std::string &addr) const; 
 
     std::optional<std::string> room_for_addr(const std::string &addr) const;
     const std::set<std::string> &addrs_in_room(const std::string &room); // TODO should this be const?

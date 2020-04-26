@@ -173,10 +173,12 @@ int main(int argc, char *argv[]) {
         ClientServerAPI chat_service{
         grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
         // chat_service.start_stream();
-        for (int i = 0; i < 10; i++) {
-            chat_service.change_nickname("chris" + to_string(i));
-            cout << *server_state;
-        }
+        // chat_service.change_nickname("chris" + to_string(i));
+        chat_service.join_room("room1");
+        // for (int i = 0; i < 10; i++) {
+            
+        //     cout << *server_state;
+        // }
         server_thread.join();
     } else {
         server_thread.join();
