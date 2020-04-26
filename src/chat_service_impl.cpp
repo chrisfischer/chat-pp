@@ -212,6 +212,11 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                 for_current_user = for_current_user || target_addr.value() == addr;
             }
         }
+        if (message.has_start_vote_message() && !message.start_vote_message().nickname().empty()) {
+            if (auto target_addr = state->addr_for_nickname(message.start_vote_message().nickname()); target_addr) {
+                for_current_user = for_current_user || target_addr.value() == addr;
+            }
+        }
         forward_to_client(message, addr, for_current_user);
     }
 
