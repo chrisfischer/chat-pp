@@ -186,14 +186,16 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
         // TODO can get out of vote by just changing your nickname
         // save is_in_vote in state for this user?
-        if (auto addr = state->addr_for_nickname(message.vote_result_message().nickname()); addr) {
-            if (message.vote_result_message().type() == client_server::VoteType::JOIN) {
-                state->join_room(addr.value(), message.room());
-            } else {
-                state->leave_room_if(addr.value(), message.room());
-                send_to_kicked = true;
+        if (message.vote_result_message().vote()) {
+            if (auto addr = state->addr_for_nickname(message.vote_result_message().nickname()); addr) {
+                if (message.vote_result_message().type() == client_server::VoteType::JOIN) {
+                    state->join_room(addr.value(), message.room());
+                } else {
+                    state->leave_room_if(addr.value(), message.room());
+                    send_to_kicked = true;
+                }
+                sender_addr = addr.value();
             }
-            sender_addr = addr.value();
         }
     } else if (message.has_nickname_message()) {
         if (!forwarded) {
