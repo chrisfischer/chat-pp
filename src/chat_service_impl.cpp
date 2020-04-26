@@ -28,7 +28,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
     while (stream->Read(&read_message)) {
         // TODO async
         handle_message(read_message, sender_addr);
-    };    
+    };
 
     // TODO send leaving message if in a chat room
     std::cout << "Leaving ReceiveMessages\n";
@@ -40,7 +40,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
 void ChatServiceImpl::handle_message(client_server::Message message,
                                      const std::string &sender_addr) {
-    
+
     std::cout << "Handling client message " << sender_addr << std::endl;
 
     std::string room;
@@ -75,7 +75,7 @@ void ChatServiceImpl::handle_message(client_server::Message message,
         }
 
         // TODO only copy message if necessary
-        auto nickname = type == client_server::VoteType::JOIN ? 
+        auto nickname = type == client_server::VoteType::JOIN ?
             state->nickname_for_addr(sender_addr) : message.start_vote_message().nickname();
         auto vote_id = state->start_vote(room, message.start_vote_message().type(), nickname);
 
@@ -106,7 +106,7 @@ void ChatServiceImpl::handle_message(client_server::Message message,
 
     forward(message, sender_addr, room);
     handle_forwarded_message(message, sender_addr, room, false);
-    
+
     std::cout << "Finished handling client message\n";
     std::cout << *state;
 }

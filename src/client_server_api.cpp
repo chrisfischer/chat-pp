@@ -133,6 +133,7 @@ string ClientServerAPI::process_left_msg(client_server::Message &msg) {
 
 string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
   if (msg.for_current_user()) {
+    cout << "here" << endl;
     bool in_room = (msg.vote_result_message().type() == client_server::JOIN) ==
       msg.vote_result_message().vote();
     room = (in_room) ? msg.room() : "";
