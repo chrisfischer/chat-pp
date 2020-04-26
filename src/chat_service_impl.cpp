@@ -118,7 +118,7 @@ void ChatServiceImpl::forward(const client_server::Message &message,
 }
 
 void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
-                                               const std::string &sender_addr,
+                                               std::string sender_addr,
                                                const std::string &room,
                                                bool forwarded) {
 
@@ -174,6 +174,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             } else {
                 state->leave_room_if(addr.value(), message.room());
             }
+            sender_addr = addr.value();
         }
     } else if (message.has_nickname_message()) {
         if (!forwarded) {
@@ -193,7 +194,9 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
         // TODO does this actually work
         if (!forwarded && sender_addr == addr && 
-                (message.has_left_message() || message.has_vote_result_message())) {
+                (message.has_left_message() || 
+                    message.has_vote_result_message() ||
+                    message.has_nickname_message())) {
             message.set_for_current_user(true);
         }
 
@@ -204,7 +207,9 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         }
 
         if (!forwarded && sender_addr == addr &&
-                (message.has_left_message() || message.has_vote_result_message())) {
+                (message.has_left_message() || 
+                    message.has_vote_result_message() ||
+                    message.has_nickname_message())) {
             message.set_for_current_user(false);
         }
     }
