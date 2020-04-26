@@ -152,6 +152,8 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     bool vote_result;
     std::string vote_id;
 
+    bool send_to_kicked{false};
+
     // If it is a start vote message, the server who has the target user connected is responsible
     // for maintaining the vote state.
     if (message.has_start_vote_message()) {
@@ -189,6 +191,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                 state->join_room(addr.value(), message.room());
             } else {
                 state->leave_room_if(addr.value(), message.room());
+                send_to_kicked = true;
             }
             sender_addr = addr.value();
         }
@@ -202,11 +205,10 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
     // Send to relevant clients
 
-    // TODO send rejection if join unsuccessful
     for (auto addr : state->addrs_in_room(room)) {
         bool for_current_user = !forwarded && sender_addr == addr &&
             (message.has_left_message() || message.has_vote_result_message() ||
-                message.has_nickname_message());
+                message.has_nickname_message() || message.has_vote_message());
         if (message.has_vote_result_message()) {
             if (auto target_addr = state->addr_for_nickname(message.vote_result_message().nickname()); target_addr) {
                 for_current_user = for_current_user || target_addr.value() == addr;
@@ -218,6 +220,10 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             }
         }
         forward_to_client(message, addr, for_current_user);
+    }
+
+    if (send_to_kicked) {
+        forward_to_client(message, sender_addr, true);   
     }
 
     // Put this after so target receives confirmation
@@ -236,6 +242,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
             auto vote_result_message = new client_server::VoteResultMessage();
             vote_result_message->set_vote(vote_result);
+            vote_result_message->set_type(vote_state.type);
             vote_result_message->set_total_number_users(new_size);
             vote_result_message->set_nickname(vote_state.target_nickname);
             vote_result_message->set_type(vote_state.vote_type);
