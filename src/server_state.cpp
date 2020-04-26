@@ -35,17 +35,18 @@ void ServerState::leave_room(const std::string &addr) {
     room2users.at(room).erase(addr);
 }
 
-void ServerState::leave_room_if(const std::string &addr, const std::string &room) {
+bool ServerState::leave_room_if(const std::string &addr, const std::string &room) {
     std::scoped_lock lock{*mutex};
     if (user2room.find(addr) == user2room.end()) {
-        return;
+        return false;
     }
     std::string curr_room = user2room.at(addr);
     if (room != curr_room) {
-        return;
+        return false;
     }
     user2room.erase(addr);
     room2users.at(room).erase(addr);
+    return true;
 }
 
 void ServerState::join_room(const std::string &addr, const std::string &room) {

@@ -153,6 +153,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     std::string vote_id;
 
     bool send_to_kicked{false};
+    bool send_to_rejected{false};
 
     // If it is a start vote message, the server who has the target user connected is responsible
     // for maintaining the vote state.
@@ -186,16 +187,21 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
         // TODO can get out of vote by just changing your nickname
         // save is_in_vote in state for this user?
-        if (message.vote_result_message().vote()) {
-            if (auto addr = state->addr_for_nickname(message.vote_result_message().nickname()); addr) {
+        
+        if (auto addr = state->addr_for_nickname(message.vote_result_message().nickname()); addr) {
+            if (message.vote_result_message().vote()) {
                 if (message.vote_result_message().type() == client_server::VoteType::JOIN) {
                     state->join_room(addr.value(), message.room());
                 } else {
-                    state->leave_room_if(addr.value(), message.room());
-                    send_to_kicked = true;
+                    // If they are still in this room, kick them.
+                    send_to_kicked = state->leave_room_if(addr.value(), message.room());
                 }
-                sender_addr = addr.value();
+            } else {
+                if (message.vote_result_message().type() == client_server::VoteType::JOIN) {
+                    send_to_rejected = true;
+                }
             }
+            sender_addr = addr.value();
         }
     } else if (message.has_nickname_message()) {
         if (!forwarded) {
@@ -224,7 +230,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         forward_to_client(message, addr, for_current_user);
     }
 
-    if (send_to_kicked) {
+    if (send_to_kicked || send_to_rejected) {
         forward_to_client(message, sender_addr, true);
     }
 

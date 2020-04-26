@@ -50,7 +50,7 @@ class ServerState {
                                     const std::string &nickname);
     void leave_room(const std::string &addr);
     // Leave room if equals given room
-    void leave_room_if(const std::string &addr, const std::string &room);
+    bool leave_room_if(const std::string &addr, const std::string &room);
     void join_room(const std::string &addr, const std::string &room);
     void remove_user(const std::string &addr);
     // Returns old size
