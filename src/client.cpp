@@ -105,7 +105,7 @@ void run_client() {
   string addr {prompt_cli()};
 
   ClientServerAPI csAPI {
-    grpc::CreateChannel("localhost:8000", grpc::InsecureChannelCredentials())};
+    grpc::CreateChannel("localhost:8002", grpc::InsecureChannelCredentials())};
 
   bool vote_flag;
   string vote_result;

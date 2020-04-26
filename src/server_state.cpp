@@ -87,7 +87,7 @@ bool ServerState::set_vote(const std::string &vote_id, bool vote_for, const std:
         std::cerr << "Vote not found " << vote_id << std::endl;
         return false;
     }
-    auto vote_state{votes.at(vote_id)};
+    VoteState &vote_state{votes.at(vote_id)};
     if (vote_state.voted_addrs.find(addr) != vote_state.voted_addrs.end()) {
         std::cerr << "Addr already voted " << addr << std::endl;
         return false;

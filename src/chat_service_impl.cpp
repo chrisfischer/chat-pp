@@ -162,15 +162,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                 vote_result = true;
                 vote_id = message.start_vote_message().vote_id();
             }
-        } else {
-            // if (auto addr = state->addr_for_nickname(message.start_vote_message().nickname()); addr) {
-            //     // TODO combine with the above
-            //     std::string vote_id = state->start_vote(room, message.start_vote_message().type(), addr.value());
-
-            //     auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
-            //     start_vote_message_copy->set_vote_id(vote_id);
-            //     message.set_allocated_start_vote_message(start_vote_message_copy);
-            // }
         }
     } else if (message.has_vote_message()) {
         vote_id = message.vote_message().vote_id();
@@ -228,8 +219,8 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     }
 
     if (send_completed_vote) {
-        std::cout << "Sending completed vote\n";
         if (auto opt_vote_state{state->get_vote(vote_id)}; opt_vote_state) {
+            std::cout << "Sending completed vote\n";
             auto vote_state{opt_vote_state.value()};
 
             auto total_number_users{state->get_room_size(room)};
@@ -251,9 +242,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             handle_forwarded_message(completed_message, "", room, false);
 
             state->remove_vote(vote_id);
-
-        } else {
-            // std::cerr < "vote not found " << vote_id << std:endl;
         }
     }
 }
