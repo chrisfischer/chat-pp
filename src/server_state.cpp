@@ -202,12 +202,21 @@ std::ostream& operator<<(std::ostream& os, const std::map<std::string, std::stri
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const std::map<std::string, unsigned int>& m) {
+    for (auto elem : m) {
+        os << elem.first << " -> " << elem.second << std::endl;
+    }
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const ServerState& state) {
     os << "**********\n";
     os << "Nicknames:\n";
     os << state.user2nickname;
     os << "Rooms:\n";
     os << state.user2room;
+    os << "Rooms sizes:\n";
+    os << state.room2size;
     os << "**********\n";
     return os;
 }

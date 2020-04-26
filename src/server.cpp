@@ -14,7 +14,7 @@
 #include "server_state.hpp"
 
 // TODO remove
-#include "client_server_api.hpp"
+// #include "client_server_api.hpp"
 
 using namespace std;
 
@@ -168,35 +168,34 @@ int main(int argc, char *argv[]) {
     auto server_state = make_shared<ServerState>();
     // {make_shared<ServerState>()};
     thread server_thread{run_server, bind_addr, server_fwd_addrs, server_state};
-    sleep(2);
-    if (SERVER_NUMBER == 1) {
-        ClientServerAPI chat_service{
-            grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
-        // chat_service.start_stream();
-        chat_service.join_room("room1");
-        chat_service.leave_room();
-        // chat_service.change_nickname("chris0");
-        // chat_service.change_nickname("chris1");
+    // sleep(2);
+    // if (SERVER_NUMBER == 1) {
+    //     ClientServerAPI chat_service{
+    //         grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
+    //     // chat_service.start_stream();
+    //     chat_service.join_room("room1");
+    //     chat_service.leave_room();
+    //     // chat_service.change_nickname("chris0");
+    //     // chat_service.change_nickname("chris1");
 
-        auto stream{chat_service.get_stream()};
-        client_server::Message message;
-        while(stream->Read(&message)) {
-            if (message.has_vote_result_message()) {
-                cout << "result " << message.vote_result_message().nickname() << " " << message.for_current_user() << endl;
-            }
-            if (message.has_left_message()) {
-                cout << "left " << message.left_message().nickname() << " " << message.for_current_user() << endl;
-            }
-        }
+    //     auto stream{chat_service.get_stream()};
+    //     client_server::Message message;
+    //     while(stream->Read(&message)) {
+    //         if (message.has_vote_result_message()) {
+    //             cout << "result " << message.vote_result_message().nickname() << " " << message.for_current_user() << endl;
+    //         }
+    //         if (message.has_left_message()) {
+    //             cout << "left " << message.left_message().nickname() << " " << message.for_current_user() << endl;
+    //         }
+    //     }
 
-        // for (int i = 0; i < 10; i++) {
+    //     // for (int i = 0; i < 10; i++) {
             
-        //     cout << *server_state;
-        // }
-        server_thread.join();
-    } else {
-        server_thread.join();
-    }
-
+    //     //     cout << *server_state;
+    //     // }
+    //     server_thread.join();
+    // } else {
+    // }
+    server_thread.join();
     
 }

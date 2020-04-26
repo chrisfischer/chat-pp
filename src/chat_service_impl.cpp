@@ -45,6 +45,8 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
     state->remove_user(context->peer());
 
+    std::cout << *state;
+
     return grpc::Status::OK;
 }
 
@@ -103,13 +105,15 @@ void ChatServiceImpl::handle_message(client_server::Message message,
             return;
         }
     } else if (message.has_nickname_message()) {
-        if (!state->get_room(sender_addr)) {
-            std::cerr << "cannot change nickname unless in a room " << sender_addr << std::endl;
-            return;
-        }
         auto nickname_message = new client_server::NicknameMessage{message.nickname_message()};
         nickname_message->set_old_nickname(state->nickname_for_addr(sender_addr));
         message.set_allocated_nickname_message(nickname_message);
+
+        if (!state->get_room(sender_addr)) {
+            state->set_nickname(sender_addr, message.nickname_message().new_nickname());
+            writers.at(sender_addr)->Write(message);
+            return;
+        }
     } else if (message.has_text_message()) {
         auto text_message = new client_server::TextMessage{message.text_message()};
         text_message->set_nickname(state->nickname_for_addr(sender_addr));
