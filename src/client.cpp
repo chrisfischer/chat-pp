@@ -55,6 +55,7 @@ void listen_to_server(ClientServerAPI& csAPI) {
     client_server::Message>> stream {csAPI.get_stream()};
 
   while (stream->Read(&msg)) {
+    cout << csAPI.process_msg(msg) << endl;
     if (msg.has_start_vote_message()) {
       cout << csAPI.process_start_vote_msg(msg) << endl;
       scoped_lock l {m};
@@ -81,9 +82,10 @@ void parse_input(string &input, ClientServerAPI& csAPI) {
     cout << "You are not currently in a chatroom. Type enter <chatroom> to "
       "enter a room." << endl;
   } else if (input.rfind("leave", 0) == 0) {
+    cout << "leaving." << endl;
     csAPI.leave_room();
   } else if (input.rfind("set nickname", 0) == 0) {
-    csAPI.change_nickname(input.erase(0, 12));
+    csAPI.change_nickname(input.erase(0, 13));
   } else if (input.rfind("kick", 0) == 0) {
     csAPI.kick(input.erase(0, 5));
   }  else {
