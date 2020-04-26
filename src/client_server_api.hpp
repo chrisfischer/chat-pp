@@ -12,6 +12,7 @@ class ClientServerAPI {
 
 private:
     std::string room;
+    std::string nickname;
     void send_message(client_server::Message &msg);
     std::shared_ptr<grpc::ClientReaderWriter<client_server::Message,
       client_server::Message>> stream;
