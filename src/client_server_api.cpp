@@ -133,7 +133,6 @@ string ClientServerAPI::process_left_msg(client_server::Message &msg) {
 
 string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
   if (msg.for_current_user()) {
-    cout << "here" << endl;
     bool in_room = (msg.vote_result_message().type() == client_server::JOIN) ==
       msg.vote_result_message().vote();
     room = (in_room) ? msg.room() : "";
@@ -148,6 +147,10 @@ string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
   return msg.room() + " > The verdict is in! " + user + result + type;
 }
 
+string ClientServerAPI::process_vote_msg(client_server::Message &msg) {
+  return msg.room() + " > Your vote is in. Thanks!";
+}
+
 string ClientServerAPI::process_msg(client_server::Message &msg) {
     if (msg.has_text_message()) {
         return ClientServerAPI::process_text_msg(msg);
@@ -157,6 +160,8 @@ string ClientServerAPI::process_msg(client_server::Message &msg) {
         return ClientServerAPI::process_left_msg(msg);
     } else if (msg.has_vote_result_message()) {
         return ClientServerAPI::process_vote_result_msg(msg);
+    } else if (msg.has_vote_message()) {
+        return ClientServerAPI::process_vote_msg(msg);
     }
     return "ERROR: invalid message";
 }

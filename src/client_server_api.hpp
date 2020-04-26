@@ -43,6 +43,7 @@ public:
     std::string process_start_vote_msg(client_server::Message &msg);
     std::string process_left_msg(client_server::Message &msg);
     std::string process_vote_result_msg(client_server::Message &msg);
+    std::string process_vote_msg(client_server::Message &msg);
 };
 
 #endif /* CLIENT_SERVER_API_HPP_ */
