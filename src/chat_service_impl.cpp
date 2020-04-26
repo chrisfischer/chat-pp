@@ -32,6 +32,8 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
     std::cout << "Leaving ReceiveMessages\n";
 
+    writers.erase(sender_addr);
+
     if (state->get_room(sender_addr)) {
         // Send goodbye message.
         client_server::LeftMessage *left_message = new client_server::LeftMessage{};
@@ -41,7 +43,6 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
         handle_message(message, sender_addr);
     }
 
-    writers.erase(sender_addr);
     state->remove_user(context->peer());
 
     return grpc::Status::OK;
@@ -202,8 +203,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         if (!forwarded) {
             state->set_nickname(sender_addr, message.nickname_message().new_nickname());
         }
-    } else if (message.has_left_message()) {
-        state->leave_room(sender_addr);
     }
 
     std::cout << "Sending to clients\n";
@@ -212,9 +211,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
     // TODO send rejection if join unsuccessful
     for (auto addr : state->addrs_in_room(room)) {
-        std::cout << "\t" + addr << std::endl;
-
-        // TODO clean up
         bool for_current_user = !forwarded && sender_addr == addr &&
             (message.has_left_message() || message.has_vote_result_message() ||
                 message.has_nickname_message());
@@ -223,13 +219,12 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                 for_current_user = for_current_user || target_addr.value() == addr;
             }
         }
-        message.set_for_current_user(for_current_user);
+        forward_to_client(message, addr, for_current_user);
+    }
 
-        if (writers.find(addr) != writers.end()) {
-            writers.at(addr)->Write(message);
-        } else {
-            std::cerr << "writer not found " << addr << std::endl;
-        }
+    // Put this after so target receives confirmation
+    if (message.has_left_message()) {
+        state->leave_room(sender_addr);
     }
 
     if (send_completed_vote) {
@@ -260,5 +255,18 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         } else {
             // std::cerr < "vote not found " << vote_id << std:endl;
         }
+    }
+}
+
+void ChatServiceImpl::forward_to_client(client_server::Message &message, const std::string &addr, bool for_current_user) {
+    std::cout << "\t" + addr << std::endl;
+
+    // TODO clean up
+    message.set_for_current_user(for_current_user);
+
+    if (writers.find(addr) != writers.end()) {
+        writers.at(addr)->Write(message);
+    } else {
+        std::cerr << "writer not found " << addr << std::endl;
     }
 }

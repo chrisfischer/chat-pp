@@ -181,11 +181,11 @@ int main(int argc, char *argv[]) {
         auto stream{chat_service.get_stream()};
         client_server::Message message;
         while(stream->Read(&message)) {
-            cout << message.has_nickname_message() << endl;
-            if (message.has_nickname_message()) {
-                cout << chat_service.process_nickname_msg(message);
-                // cout << message.nickname_message().old_nickname() << endl;
-                // cout << message.nickname_message().new_nickname() << endl;
+            if (message.has_vote_result_message()) {
+                cout << "result " << message.vote_result_message().nickname() << " " << message.for_current_user() << endl;
+            }
+            if (message.has_left_message()) {
+                cout << "left " << message.left_message().nickname() << " " << message.for_current_user() << endl;
             }
         }
 

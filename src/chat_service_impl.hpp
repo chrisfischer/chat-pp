@@ -16,11 +16,12 @@ class ChatServiceImpl final : public client_server::ChatService::Service {
     std::vector<std::unique_ptr<ForwardingServiceClient>> forwarding_clients;
 
     // Used to handle non-forwarded
-    void handle_message(client_server::Message request,
+    void handle_message(client_server::Message message,
                         const std::string &sender_addr);
-    void forward(const client_server::Message &request,
+    void forward(const client_server::Message &message,
                  const std::string &sender_addr,
                  const std::string &room);
+    void forward_to_client(client_server::Message &message, const std::string &addr, bool forwarded);
 
 
    public:
