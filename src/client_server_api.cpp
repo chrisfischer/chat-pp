@@ -144,17 +144,18 @@ string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
                     ? "been invited to join "
                     : "been kicked from ")
                     + msg.room() + ".";
-  string result = (msg.vote_result_message().vote()) ? "" : "not";
+  string result = (msg.vote_result_message().vote()) ? "" : "not ";
   return msg.room() + " > The verdict is in! " + user + result + type;
 }
 
 string ClientServerAPI::process_vote_msg(client_server::Message &msg) {
-  if (!msg.for_current_user()) {
-    return msg.room() + " > Your vote is in. Thanks!";
-  }
+  return msg.room() + " > Your vote is in. Thanks!";
 }
 
 string ClientServerAPI::process_getting_kicked_msg(client_server::Message &msg) {
+  if (msg.for_current_user() == 0) {
+    return "";
+  }
   return msg.room() + " > Your chatroom is voting on whether to kick you :(";
 }
 

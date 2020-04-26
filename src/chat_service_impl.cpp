@@ -223,7 +223,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     }
 
     if (send_to_kicked) {
-        forward_to_client(message, sender_addr, true);   
+        forward_to_client(message, sender_addr, true);
     }
 
     // Put this after so target receives confirmation
@@ -242,7 +242,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
             auto vote_result_message = new client_server::VoteResultMessage();
             vote_result_message->set_vote(vote_result);
-            vote_result_message->set_type(vote_state.type);
             vote_result_message->set_total_number_users(new_size);
             vote_result_message->set_nickname(vote_state.target_nickname);
             vote_result_message->set_type(vote_state.vote_type);
