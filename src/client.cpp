@@ -12,8 +12,6 @@
 
 using namespace std;
 
-mutex m;
-
 void print_help_message()
 {
   cout << endl << "Ĉ++ has five special commands:" << endl;
@@ -105,7 +103,7 @@ void run_client() {
   string addr {prompt_cli()};
 
   ClientServerAPI csAPI {
-    grpc::CreateChannel("localhost:8002", grpc::InsecureChannelCredentials())};
+    grpc::CreateChannel("localhost:8000", grpc::InsecureChannelCredentials())};
 
   bool vote_flag;
   string vote_result;
