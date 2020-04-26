@@ -100,12 +100,12 @@ string ClientServerAPI::process_text_msg(client_server::Message &msg) {
 }
 
 string ClientServerAPI::process_nickname_msg(client_server::Message &msg) {
-  if (msg.for_current_user()) {
-    nickname = msg.nickname_message().new_nickname();
-  }
-  return msg.room() + " > " + msg.nickname_message().old_nickname() +
-    " has changed their nickname to " +
-    msg.nickname_message().new_nickname() + ".";
+    if (msg.for_current_user()) {
+        nickname = msg.nickname_message().new_nickname();
+    }
+    return msg.room() + " > " + msg.nickname_message().old_nickname() +
+        " has changed their nickname to " +
+        msg.nickname_message().new_nickname() + ".";
 }
 
 string ClientServerAPI::process_start_vote_msg(client_server::Message &msg) {

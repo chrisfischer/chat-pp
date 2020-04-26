@@ -174,16 +174,18 @@ int main(int argc, char *argv[]) {
             grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
         // chat_service.start_stream();
         chat_service.join_room("room1");
-        chat_service.change_nickname("chris0");
-        chat_service.change_nickname("chris1");
+        chat_service.leave_room();
+        // chat_service.change_nickname("chris0");
+        // chat_service.change_nickname("chris1");
 
         auto stream{chat_service.get_stream()};
         client_server::Message message;
         while(stream->Read(&message)) {
             cout << message.has_nickname_message() << endl;
             if (message.has_nickname_message()) {
-                cout << message.nickname_message().old_nickname() << endl;
-                cout << message.nickname_message().new_nickname() << endl;
+                cout << chat_service.process_nickname_msg(message);
+                // cout << message.nickname_message().old_nickname() << endl;
+                // cout << message.nickname_message().new_nickname() << endl;
             }
         }
 

@@ -30,8 +30,17 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
         handle_message(read_message, sender_addr);
     };
 
-    // TODO send leaving message if in a chat room
     std::cout << "Leaving ReceiveMessages\n";
+
+    if (state->get_room(sender_addr)) {
+        // Send goodbye message.
+        client_server::LeftMessage *left_message = new client_server::LeftMessage{};
+        left_message->set_nickname(state->nickname_for_addr(sender_addr));
+        client_server::Message message;
+        message.set_allocated_left_message(left_message);
+        handle_message(message, sender_addr);
+    }
+
     writers.erase(sender_addr);
     state->remove_user(context->peer());
 
@@ -102,6 +111,12 @@ void ChatServiceImpl::handle_message(client_server::Message message,
         auto text_message = new client_server::TextMessage{message.text_message()};
         text_message->set_nickname(state->nickname_for_addr(sender_addr));
         message.set_allocated_text_message(text_message);
+    } else if (message.has_left_message()) {
+        if (message.left_message().nickname().empty()) {
+            auto left_message = new client_server::LeftMessage{message.left_message()};
+            left_message->set_nickname(state->nickname_for_addr(sender_addr));
+            message.set_allocated_left_message(left_message);
+        }
     }
 
     forward(message, sender_addr, room);
