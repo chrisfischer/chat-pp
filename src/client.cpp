@@ -59,7 +59,7 @@ void listen_to_server(
       cout << csAPI.process_start_vote_msg(msg) << endl;
       vote_flag = 1;
       while (vote_flag) {};
-      transform(vote_result.begin(), vote_result.end(), vote_result.begin(), ::tolower); 
+      transform(vote_result.begin(), vote_result.end(), vote_result.begin(), ::tolower);
       csAPI.submit_vote(msg.start_vote_message().vote_id(), vote_result == "y" || vote_result == "yes");
     } else if (!msg.has_vote_message() || msg.for_current_user()) {
       cout << csAPI.process_msg(msg) << endl;
