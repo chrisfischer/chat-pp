@@ -27,7 +27,7 @@ void ChatServiceClient::send_message(client_server::Message &msg) {
 }
 
 void ChatServiceClient::send_text(const string &text) {
-    client_server::TextMessage *text_msg = new client_server::TextMessage();
+    client_server::TextMessage *text_msg = new client_server::TextMessage{};
     text_msg->set_text(text);
 
     client_server::Message msg;
@@ -36,7 +36,7 @@ void ChatServiceClient::send_text(const string &text) {
 }
 
 void ChatServiceClient::change_nickname(const string &new_nickname) {
-    client_server::NicknameMessage *nn_msg = new client_server::NicknameMessage();
+    client_server::NicknameMessage *nn_msg = new client_server::NicknameMessage{};
     nn_msg->set_new_nickname(new_nickname);
 
     client_server::Message msg;
@@ -45,7 +45,7 @@ void ChatServiceClient::change_nickname(const string &new_nickname) {
 }
 
 void ChatServiceClient::leave_room() {
-    client_server::LeftMessage *left_msg = new client_server::LeftMessage();
+    client_server::LeftMessage *left_msg = new client_server::LeftMessage{};
 
     client_server::Message msg;
     msg.set_allocated_left_message(left_msg);
@@ -53,7 +53,7 @@ void ChatServiceClient::leave_room() {
 }
 
 void ChatServiceClient::join_room(const string &new_room) {
-    client_server::StartVoteMessage *sv_msg = new client_server::StartVoteMessage();
+    client_server::StartVoteMessage *sv_msg = new client_server::StartVoteMessage{};
     sv_msg->set_type(client_server::VoteType::JOIN);
 
     client_server::Message msg;
@@ -63,7 +63,7 @@ void ChatServiceClient::join_room(const string &new_room) {
 }
 
 void ChatServiceClient::kick(const string &nickname) {
-    client_server::StartVoteMessage *sv_msg = new client_server::StartVoteMessage();
+    client_server::StartVoteMessage *sv_msg = new client_server::StartVoteMessage{};
     sv_msg->set_type(client_server::KICK);
     sv_msg->set_nickname(nickname);
 
@@ -73,7 +73,7 @@ void ChatServiceClient::kick(const string &nickname) {
 }
 
 void ChatServiceClient::submit_vote(const string &vote_id, bool vote) {
-    client_server::VoteMessage *vote_msg = new client_server::VoteMessage();
+    client_server::VoteMessage *vote_msg = new client_server::VoteMessage{};
     vote_msg->set_vote_id(vote_id);
     vote_msg->set_vote(vote);
 
@@ -83,7 +83,8 @@ void ChatServiceClient::submit_vote(const string &vote_id, bool vote) {
 }
 
 void ChatServiceClient::process_text_msg(client_server::Message &msg) {
-    cout << color::blue << msg.room() + " (" + msg.text_message().nickname() + ") > " << color::def << msg.text_message().text() << endl;
+    cout << color::blue << msg.room() + " (" + msg.text_message().nickname() + ") > " 
+        << color::def << msg.text_message().text() << endl;
 }
 
 string ChatServiceClient::process_nickname_msg(client_server::Message &msg) {
@@ -106,25 +107,25 @@ string ChatServiceClient::process_left_msg(client_server::Message &msg) {
     if (msg.for_current_user()) {
         state->room = "";
     }
-    return (msg.for_current_user() ? "You have " : msg.left_message().nickname() + " has") +
+    return (msg.for_current_user() ? "You have " : msg.left_message().nickname() + " has ") +
            "left the room";
 }
 
 string ChatServiceClient::process_vote_result_msg(client_server::Message &msg) {
     if (msg.for_current_user()) {
-        bool in_room = (msg.vote_result_message().type() == client_server::JOIN) ==
-                       msg.vote_result_message().vote();
+        bool in_room{(msg.vote_result_message().type() == client_server::JOIN) ==
+                     msg.vote_result_message().vote()};
         state->room = in_room ? msg.room() : "";
         state->nickname = in_room ? state->nickname : "";
     }
-    string user = msg.for_current_user()
-                      ? "You have "
-                      : msg.vote_result_message().nickname() + " has ";
-    string type = (msg.vote_result_message().type() == client_server::JOIN
-                       ? "been added to "
-                       : "been kicked from ") +
-                  msg.room();
-    string result = msg.vote_result_message().vote() ? "" : "not ";
+    string user{msg.for_current_user()
+                    ? "You have "
+                    : msg.vote_result_message().nickname() + " has "};
+    string type{(msg.vote_result_message().type() == client_server::JOIN
+                    ? "been added to "
+                    : "been kicked from ") +
+                  msg.room()};
+    string result{msg.vote_result_message().vote() ? "" : "not "};
     return "The verdict is in! " + user + result + type;
 }
 

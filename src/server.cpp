@@ -41,18 +41,16 @@ int parse_config_file(const string &file_name, int server_number,
         return -1;
     }
 
-    int count = 1;
-    bool found = false;
+    int count{1};
+    bool found{false};
     string line;
     while (infile >> line) {
-        string ipport = line;
-
         if (server_number == count) {
             bind_addr = line.substr(0, line.size());
             found = true;
         } else {
             // Collection of addresses that we neeed to forward to
-            fwd_addrs.insert(ipport);
+            fwd_addrs.insert(line);
         }
 
         count++;
@@ -160,7 +158,7 @@ int main(int argc, char *argv[]) {
     sa.sa_handler = sig_handler;
     sigaction(SIGINT, &sa, NULL);
 
-    auto server_state = make_shared<ServerState>();
+    auto server_state{make_shared<ServerState>()};
     thread server_thread{run_server, bind_addr, server_fwd_addrs, server_state};
 
     server_thread.join();

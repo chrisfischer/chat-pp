@@ -7,6 +7,8 @@
 #include "common.hpp"
 #include "proto/server_server.grpc.pb.h"
 
+extern bool IS_VERBOSE;
+
 using namespace std;
 
 ForwardingServiceImpl::ForwardingServiceImpl(
@@ -24,7 +26,7 @@ grpc::Status ForwardingServiceImpl::Forward(grpc::ServerContext *context,
                                            true);
 
     log("Finished handling forwarded message from " + context->peer());
-    std::cout << *state;
+    if (IS_VERBOSE) std::cout << *state;
 
     return grpc::Status::OK;
 }

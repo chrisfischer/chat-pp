@@ -24,10 +24,10 @@ class Modifier {
     }
 };
 
-const Modifier red = Modifier(RED);
-const Modifier green = Modifier(GREEN);
-const Modifier blue = Modifier(BLUE);
-const Modifier def = Modifier(DEFAULT);
+const Modifier red = Modifier{RED};
+const Modifier green = Modifier{GREEN};
+const Modifier blue = Modifier{BLUE};
+const Modifier def = Modifier{DEFAULT};
 }  // namespace color
 
 void log(std::string msg);

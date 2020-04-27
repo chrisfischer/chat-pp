@@ -5,6 +5,8 @@
 
 #include "src/common.hpp"
 
+extern bool IS_VERBOSE;
+
 using namespace std;
 
 ChatServiceImpl::ChatServiceImpl(shared_ptr<ServerState> state, const set<string> &addrs) : state{state} {
@@ -18,8 +20,8 @@ ChatServiceImpl::ChatServiceImpl(shared_ptr<ServerState> state, const set<string
 }
 
 grpc::Status ChatServiceImpl::ReceiveMessages(
-    grpc::ServerContext *context,
-    grpc::ServerReaderWriter<client_server::Message, client_server::Message> *stream) {
+        grpc::ServerContext *context,
+        grpc::ServerReaderWriter<client_server::Message, client_server::Message> *stream) {
     auto sender_addr{context->peer()};
 
     log("New connection from " + sender_addr);
@@ -48,7 +50,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
     state->remove_user(context->peer());
 
-    cout << *state;
+    if (IS_VERBOSE) cout << *state;
 
     return grpc::Status::OK;
 }
@@ -131,7 +133,7 @@ void ChatServiceImpl::handle_message(client_server::Message message,
     handle_forwarded_message(message, sender_addr, room, false);
 
     log("Finished handling client message " + sender_addr);
-    cout << *state;
+    if (IS_VERBOSE) cout << *state;
 }
 
 void ChatServiceImpl::forward(const client_server::Message &message,
@@ -183,7 +185,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             }
         }
     } else if (message.has_vote_result_message()) {
-        cout << *state;
+        if (IS_VERBOSE) cout << *state;
         state->set_room_size(room, message.vote_result_message().total_number_users());
 
         if (auto addr = state->addr_for_nickname(message.vote_result_message().nickname()); addr) {
