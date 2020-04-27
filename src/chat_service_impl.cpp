@@ -1,7 +1,8 @@
+#include "src/chat_service_impl.hpp"
+
 #include <algorithm>
 #include <iostream>
 
-#include "src/chat_service_impl.hpp"
 #include "src/common.hpp"
 
 using namespace std;
@@ -17,20 +18,18 @@ ChatServiceImpl::ChatServiceImpl(shared_ptr<ServerState> state, const set<string
 }
 
 grpc::Status ChatServiceImpl::ReceiveMessages(
-    grpc::ServerContext* context,
-    grpc::ServerReaderWriter<client_server::Message, client_server::Message>* stream) {
-
+    grpc::ServerContext *context,
+    grpc::ServerReaderWriter<client_server::Message, client_server::Message> *stream) {
     auto sender_addr{context->peer()};
 
     log("New connection from " + sender_addr);
 
     state->register_user(context->peer());
-    
+
     writers[sender_addr] = stream;
 
     client_server::Message read_message;
     while (stream->Read(&read_message)) {
-        // TODO async
         handle_message(read_message, sender_addr);
     };
 
@@ -56,7 +55,6 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
 void ChatServiceImpl::handle_message(client_server::Message message,
                                      const string &sender_addr) {
-
     log("Handling client message from " + sender_addr);
 
     string room;
@@ -92,9 +90,7 @@ void ChatServiceImpl::handle_message(client_server::Message message,
             }
         }
 
-        // TODO only copy message if necessary
-        auto &nickname{type == client_server::VoteType::JOIN ?
-            state->nickname_for_addr(sender_addr) : message.start_vote_message().nickname()};
+        auto &nickname{type == client_server::VoteType::JOIN ? state->nickname_for_addr(sender_addr) : message.start_vote_message().nickname()};
         auto vote_id{state->start_vote(room, message.start_vote_message().type(), nickname)};
 
         auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
@@ -105,8 +101,8 @@ void ChatServiceImpl::handle_message(client_server::Message message,
     } else if (message.has_vote_message()) {
         // Prevent counting vote message if sender is target
         if (auto opt_vote_state{state->get_vote(message.vote_message().vote_id())};
-                opt_vote_state && 
-                opt_vote_state.value().target_nickname == state->nickname_for_addr(sender_addr)) {
+            opt_vote_state &&
+            opt_vote_state.value().target_nickname == state->nickname_for_addr(sender_addr)) {
             return;
         }
     } else if (message.has_nickname_message()) {
@@ -138,11 +134,9 @@ void ChatServiceImpl::handle_message(client_server::Message message,
     cout << *state;
 }
 
-
 void ChatServiceImpl::forward(const client_server::Message &message,
                               const string &sender_addr,
                               const string &room) {
-    // TODO change to foreach + functional
     log("Forwarding to " + to_string(forwarding_clients.size()) + " servers");
     for (unsigned int i = 0; i < forwarding_clients.size(); i++) {
         forwarding_clients.at(i)->Forward(sender_addr, message, room);
@@ -154,7 +148,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
                                                string sender_addr,
                                                const string &room,
                                                bool forwarded) {
-
     message.set_room(room);
 
     // Whether or not a vote is completed
@@ -168,11 +161,9 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     // If it is a start vote message, the server who has the target user connected is responsible
     // for maintaining the vote state.
     if (message.has_start_vote_message()) {
-        // TODO any time we are changing the message here, it is only being fowarded to that server's clients
-
         if (!forwarded) {
             if (message.start_vote_message().type() == client_server::VoteType::JOIN &&
-                    state->get_room_size(room) == 0) {
+                state->get_room_size(room) == 0) {
                 send_completed_vote = true;
                 vote_result = true;
                 vote_id = message.start_vote_message().vote_id();
@@ -195,9 +186,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         cout << *state;
         state->set_room_size(room, message.vote_result_message().total_number_users());
 
-        // TODO can get out of vote by just changing your nickname
-        // save is_in_vote in state for this user?
-        
         if (auto addr = state->addr_for_nickname(message.vote_result_message().nickname()); addr) {
             if (message.vote_result_message().vote()) {
                 if (message.vote_result_message().type() == client_server::VoteType::JOIN) {
@@ -225,8 +213,8 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
     for (auto &addr : state->addrs_in_room(room)) {
         bool for_current_user = !forwarded && sender_addr == addr &&
-            (message.has_left_message() || message.has_vote_result_message() ||
-                message.has_nickname_message() || message.has_vote_message());
+                                (message.has_left_message() || message.has_vote_result_message() ||
+                                 message.has_nickname_message() || message.has_vote_message());
         if (message.has_vote_result_message()) {
             if (auto target_addr = state->addr_for_nickname(message.vote_result_message().nickname()); target_addr) {
                 for_current_user = for_current_user || target_addr.value() == addr;
@@ -257,7 +245,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
             auto total_number_users{state->get_room_size(room)};
             auto new_size = total_number_users +
-                (vote_state.vote_type == client_server::VoteType::JOIN ? 1 : -1);
+                            (vote_state.vote_type == client_server::VoteType::JOIN ? 1 : -1);
 
             auto vote_result_message = new client_server::VoteResultMessage();
             vote_result_message->set_vote(vote_result);
@@ -269,7 +257,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             completed_message.set_room(room);
             completed_message.set_allocated_vote_result_message(vote_result_message);
 
-            // TODO async?
             forward(completed_message, "", room);
             handle_forwarded_message(completed_message, "", room, false);
 

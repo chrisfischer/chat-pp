@@ -1,8 +1,8 @@
-#include <iostream>
 #include "common.hpp"
 
-using namespace std;
+#include <iostream>
 
+using namespace std;
 
 /**
  * Logs the given string to stdout
@@ -22,6 +22,7 @@ void log(string msg) {
  */
 void log_err(string msg) {
     if (IS_VERBOSE) {
-        cout << color::red << "[" << SERVER_NUMBER << "] " << msg << endl << color::def;
+        cout << color::red << "[" << SERVER_NUMBER << "] " << msg << endl
+             << color::def;
     }
 }

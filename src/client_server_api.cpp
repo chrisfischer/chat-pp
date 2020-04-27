@@ -1,23 +1,25 @@
+#include "src/client_server_api.hpp"
+
 #include <grpcpp/grpcpp.h>
+
 #include <string>
 
 #include "proto/client_server.grpc.pb.h"
 #include "proto/client_server.pb.h"
-
-#include "src/client_server_api.hpp"
 #include "src/client_state.hpp"
 #include "src/common.hpp"
 
 using namespace std;
 
-ChatServiceClient::ChatServiceClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<ClientState> state) 
-  : state{state}, stub_{client_server::ChatService::NewStub(channel)} {
+ChatServiceClient::ChatServiceClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<ClientState> state)
+    : state{state}, stub_{client_server::ChatService::NewStub(channel)} {
     stream = stub_->ReceiveMessages(&context);
 }
 
 shared_ptr<grpc::ClientReaderWriter<client_server::Message,
-  client_server::Message>> ChatServiceClient::get_stream() {
-  return stream;
+                                    client_server::Message>>
+ChatServiceClient::get_stream() {
+    return stream;
 }
 
 void ChatServiceClient::send_message(client_server::Message &msg) {
@@ -61,7 +63,7 @@ void ChatServiceClient::join_room(const string &new_room) {
 }
 
 void ChatServiceClient::kick(const string &nickname) {
-    client_server::StartVoteMessage * sv_msg = new client_server::StartVoteMessage();
+    client_server::StartVoteMessage *sv_msg = new client_server::StartVoteMessage();
     sv_msg->set_type(client_server::KICK);
     sv_msg->set_nickname(nickname);
 
@@ -81,8 +83,7 @@ void ChatServiceClient::submit_vote(const string &vote_id, bool vote) {
 }
 
 void ChatServiceClient::process_text_msg(client_server::Message &msg) {
-    cout << color::blue << msg.room() + " (" + msg.text_message().nickname() + ") > " << color::def <<
-      msg.text_message().text() << endl;
+    cout << color::blue << msg.room() + " (" + msg.text_message().nickname() + ") > " << color::def << msg.text_message().text() << endl;
 }
 
 string ChatServiceClient::process_nickname_msg(client_server::Message &msg) {
@@ -90,7 +91,7 @@ string ChatServiceClient::process_nickname_msg(client_server::Message &msg) {
         state->nickname = msg.nickname_message().new_nickname();
     }
     return msg.nickname_message().old_nickname() + " changed their nickname to " +
-        msg.nickname_message().new_nickname();
+           msg.nickname_message().new_nickname();
 }
 
 string ChatServiceClient::process_start_vote_msg(client_server::Message &msg) {
@@ -102,45 +103,45 @@ string ChatServiceClient::process_start_vote_msg(client_server::Message &msg) {
 }
 
 string ChatServiceClient::process_left_msg(client_server::Message &msg) {
-  if (msg.for_current_user()) {
-    state->room = "";
-  }
-  return (msg.for_current_user() ? "You have " : msg.left_message().nickname() + " has") +
-        "left the room";
+    if (msg.for_current_user()) {
+        state->room = "";
+    }
+    return (msg.for_current_user() ? "You have " : msg.left_message().nickname() + " has") +
+           "left the room";
 }
 
 string ChatServiceClient::process_vote_result_msg(client_server::Message &msg) {
-  if (msg.for_current_user()) {
-    bool in_room = (msg.vote_result_message().type() == client_server::JOIN) ==
-      msg.vote_result_message().vote();
-    state->room = in_room ? msg.room() : "";
-    state->nickname = in_room ? state->nickname : "";
-  }
-  string user = msg.for_current_user()
-                    ? "You have "
-                    : msg.vote_result_message().nickname() + " has ";
-  string type = (msg.vote_result_message().type() == client_server::JOIN
-                    ? "been added to "
-                    : "been kicked from ")
-                    + msg.room();
-  string result = msg.vote_result_message().vote() ? "" : "not ";
-  return "The verdict is in! " + user + result + type;
+    if (msg.for_current_user()) {
+        bool in_room = (msg.vote_result_message().type() == client_server::JOIN) ==
+                       msg.vote_result_message().vote();
+        state->room = in_room ? msg.room() : "";
+        state->nickname = in_room ? state->nickname : "";
+    }
+    string user = msg.for_current_user()
+                      ? "You have "
+                      : msg.vote_result_message().nickname() + " has ";
+    string type = (msg.vote_result_message().type() == client_server::JOIN
+                       ? "been added to "
+                       : "been kicked from ") +
+                  msg.room();
+    string result = msg.vote_result_message().vote() ? "" : "not ";
+    return "The verdict is in! " + user + result + type;
 }
 
 string ChatServiceClient::process_vote_msg(client_server::Message &msg) {
-  string vote {msg.vote_message().vote() ? "yes" : "no"};
-  return "You voted (" + vote + ")";
+    string vote{msg.vote_message().vote() ? "yes" : "no"};
+    return "You voted (" + vote + ")";
 }
 
 string ChatServiceClient::process_getting_kicked_msg(client_server::Message &msg) {
-  return "Your chatroom is voting on whether to kick you :(";
+    return "Your chatroom is voting on whether to kick you :(";
 }
 
 void ChatServiceClient::process_msg(client_server::Message &msg) {
     if (msg.has_text_message()) {
         ChatServiceClient::process_text_msg(msg);
         return;
-    } 
+    }
     string to_show;
     if (msg.has_nickname_message()) {
         to_show = ChatServiceClient::process_nickname_msg(msg);

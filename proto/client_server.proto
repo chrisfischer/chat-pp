@@ -12,9 +12,7 @@ message NicknameMessage {
   string new_nickname = 3;
 }
 
-message LeftMessage {
-  string nickname = 2;
-}
+message LeftMessage { string nickname = 2; }
 
 enum VoteType {
   JOIN = 0;

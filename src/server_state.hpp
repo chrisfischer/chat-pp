@@ -8,13 +8,6 @@
 
 #include "proto/client_server.pb.h"
 
-// TODO consistency issues with knowing how many people are in each room
-// Turn into sync, rpc?
-
-// TODO add syncronized map that overrides set with getting a lock for row
-
-// TODO make it so we don't need to know how many people are in each room
-
 class VoteState {
    public:
     std::string room;
