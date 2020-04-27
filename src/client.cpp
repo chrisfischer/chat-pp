@@ -6,9 +6,9 @@
 // #include <mutex>
 #include <string>
 #include <string_view>
-#include <bits/stdc++.h>
 #include <termios.h>
 #include <unistd.h>
+#include <cctype>
 
 #include "proto/client_server.grpc.pb.h"
 #include "src/client_server_api.hpp"
