@@ -36,8 +36,6 @@ string prompt_cli()
   string serverIP;
   getline(cin, serverIP);
 
-  cout << "You're all set! You can enter a chatroom now by typing enter "
-    "<chatroom>." << endl;
   return serverIP;
 }
 
@@ -73,20 +71,19 @@ void parse_input(string &input, ClientServerAPI& csAPI, bool& verdict_pending) {
     cout << "Vote pending... please wait." << endl;
   } else if (!input.compare("help")) {
     print_help_message();
-  } else if (input.rfind("enter", 0) == 0 && !csAPI.in_room()) {
+  } else if (input.rfind("enter ", 0) == 0 && !csAPI.in_room()) {
     string room = input.erase(0, 6);
     csAPI.join_room(room);
-    cout << "Users from " << room << " will now vote on whether to let you in "
-      "the room." << endl;
+    cout << "Users from " << room << " will now vote..." << endl;
     verdict_pending = 1;
+  } else if (input.rfind("nickname ", 0) == 0) {
+    csAPI.change_nickname(input.erase(0, 9));
   } else if (!csAPI.in_room()) {
     cout << "You are not currently in a chatroom. Type enter <chatroom> to "
       "enter a room." << endl;
   } else if (input.rfind("leave", 0) == 0) {
     csAPI.leave_room();
-  } else if (input.rfind("nickname", 0) == 0) {
-    csAPI.change_nickname(input.erase(0, 13));
-  } else if (input.rfind("kick", 0) == 0) {
+  } else if (input.rfind("kick ", 0) == 0) {
     csAPI.kick(input.erase(0, 5));
   }  else {
     csAPI.send_text(input);
@@ -115,7 +112,9 @@ void run_client() {
 
   ClientServerAPI csAPI {
     grpc::CreateChannel(addr, grpc::InsecureChannelCredentials())};
-  // localhost:8000
+
+  cout << "You're all set! You can enter a chatroom now by typing enter "
+    "<chatroom>." << endl;
 
   bool vote_flag;
   string vote_result;
