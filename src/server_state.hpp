@@ -46,13 +46,17 @@ class ServerState {
    public:
     ServerState();
 
+    // Register a new user
+    void register_user(const std::string &addr);
+    // Remove all state associated with a user
+    void remove_user(const std::string &addr);
+    // Set nickname for a given user
     const std::string &set_nickname(const std::string &addr,
                                     const std::string &nickname);
     void leave_room(const std::string &addr);
     // Leave room if equals given room
     bool leave_room_if(const std::string &addr, const std::string &room);
     void join_room(const std::string &addr, const std::string &room);
-    void remove_user(const std::string &addr);
     // Returns old size
     unsigned int set_room_size(const std::string &room, unsigned int new_size);
     unsigned int decr_room_size(const std::string &room);
@@ -67,7 +71,7 @@ class ServerState {
     // TODO make more efficient
     std::optional<std::string> addr_for_nickname(const std::string &nickname) const;
     // Returns addr if none found
-    const std::string &nickname_for_addr(const std::string &addr) const;
+    std::string nickname_for_addr(const std::string &addr) const;
 
     std::optional<std::string> get_room(const std::string &addr) const; 
 

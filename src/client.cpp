@@ -3,106 +3,111 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
-#include <mutex>
+// #include <mutex>
 #include <string>
 #include <string_view>
 #include <bits/stdc++.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include "proto/client_server.grpc.pb.h"
 #include "src/client_server_api.hpp"
+#include "src/client_state.hpp"
 
 using namespace std;
 
-void print_help_message()
-{
+
+void print_help_message() {
+  cout << Color::green;
   cout << "Ĉ++ has five special commands:" << endl;
-  cout << "1. help : Open the help menu"
-    << endl;
+  cout << "1. help : Open the help menu" << endl;
   cout << "2. enter <chatroom> : Request to join <chatroom>. Users of <chatroom> will "
     "vote on whether to let you in." << endl;
   cout << "3. leave : Leave your current chatroom." << endl;
   cout << "4. nickname <new_nickname> : Change your nickname." << endl;
   cout << "5. kick <nickname> : Start a vote to kick someone out of the chatroom." << endl;
+  cout << Color::def;
 }
 
-string prompt_cli()
-{
+string prompt_cli() {
+  cout << Color::green;
   cout << "Welcome to Ĉ++!" << endl << endl;
+  cout << Color::def;
   print_help_message();
-  cout << "Please specify the IP address you would "
-    "like to connect to." << endl << "IP Address:" << endl;
+  cout << endl;
 
-  // localhost:50051
+  cout << "Please specify the IP address you would like to connect to." << endl << "IP Address: ";
+
   string serverIP;
   getline(cin, serverIP);
 
   return serverIP;
 }
 
-void listen_to_server(
-    ClientServerAPI& csAPI,
-    bool& vote_flag,
-    string& vote_result,
-    bool& verdict_pending) {
+void listen_to_server(ChatServiceClient &cs_api, shared_ptr<ClientState> state) {
 
   client_server::Message msg;
-  shared_ptr<grpc::ClientReaderWriter<client_server::Message,
-    client_server::Message>> stream {csAPI.get_stream()};
+  auto stream {cs_api.get_stream()};
 
   while (stream->Read(&msg)) {
     if (msg.has_vote_result_message()) {
-      verdict_pending = 0;
+      state->vote_pending = false;
     }
     if (msg.has_start_vote_message() && !msg.for_current_user()) {
-      cout << csAPI.process_start_vote_msg(msg) << endl;
-      vote_flag = 1;
-      while (vote_flag) {};
-      transform(vote_result.begin(), vote_result.end(), vote_result.begin(), ::tolower);
-      csAPI.submit_vote(msg.start_vote_message().vote_id(), vote_result == "y" || vote_result == "yes");
+      // Vote regarding someone else
+      cout << cs_api.process_start_vote_msg(msg) << endl;
+      state->vote_flag = true;
+      while (state->vote_flag) {};
+      cs_api.submit_vote(msg.start_vote_message().vote_id(), state->vote_input == "y" || state->vote_input == "yes");
     } else if (!msg.has_vote_message() || msg.for_current_user()) {
-      cout << csAPI.process_msg(msg) << endl;
+      cs_api.process_msg(msg);
     }
   }
   grpc::Status status = stream->Finish();
 }
 
-void parse_input(string &input, ClientServerAPI& csAPI, bool& verdict_pending) {
-  if (verdict_pending) {
+void parse_input(string &input, ChatServiceClient& cs_api, shared_ptr<ClientState> state) {
+  if (state->vote_pending) {
     cout << "Vote pending... please wait." << endl;
   } else if (!input.compare("help")) {
     print_help_message();
-  } else if (input.rfind("enter ", 0) == 0 && !csAPI.in_room()) {
-    string room = input.erase(0, 6);
-    csAPI.join_room(room);
-    cout << "Users from " << room << " will now vote..." << endl;
-    verdict_pending = 1;
+  } else if (input.rfind("enter ", 0) == 0 && !state->in_room()) {
+    string room {input.erase(0, 6)};
+    if (room.empty()) {
+      cout << Color::red << "Invalid room" << endl << Color::def;
+      return;
+    }
+    cs_api.join_room(room);
+    cout << Color::blue << "Users from " << room << " will now vote..." << endl << Color::def;
+    state->vote_pending = true;
   } else if (input.rfind("nickname ", 0) == 0) {
-    csAPI.change_nickname(input.erase(0, 9));
-  } else if (!csAPI.in_room()) {
-    cout << "You are not currently in a chatroom. Type enter <chatroom> to "
-      "enter a room." << endl;
+    string nickname {input.erase(0, 9)};
+    if (nickname.empty()) {
+      cout << Color::red << "Invalid nickname" << endl << Color::def;
+      return;
+    }
+    cs_api.change_nickname(nickname);
+  } else if (!state->in_room()) {
+    cout << Color::red << "You are not currently in a chatroom. Type enter <chatroom> to "
+      "enter a room." << endl << Color::def;
   } else if (input.rfind("leave", 0) == 0) {
-    csAPI.leave_room();
+    cs_api.leave_room();
   } else if (input.rfind("kick ", 0) == 0) {
-    csAPI.kick(input.erase(0, 5));
-  }  else {
-    csAPI.send_text(input);
+    cs_api.kick(input.erase(0, 5));
+  } else {
+    cs_api.send_text(input);
   }
 }
 
-void listen_to_user(
-    ClientServerAPI& csAPI,
-    bool& vote_flag,
-    string& vote_result,
-    bool& vote_pending) {
-
+void listen_to_user(ChatServiceClient& cs_api, shared_ptr<ClientState> state) {
   string user_input;
-  while(getline(cin, user_input)) {
-    if (vote_flag) {
-      vote_result = user_input;
-      vote_flag = 0;
+  while (getline(cin, user_input)) {
+    if (state->vote_flag) {
+      transform(user_input.begin(), user_input.end(), user_input.begin(), ::tolower);
+      state->vote_input = user_input;
+      state->vote_flag = false;
     } else {
-      parse_input(user_input, csAPI, vote_pending);
+      parse_input(user_input, cs_api, state);
     }
   }
 }
@@ -110,29 +115,14 @@ void listen_to_user(
 void run_client() {
   string addr {prompt_cli()};
 
-  ClientServerAPI csAPI {
-    grpc::CreateChannel(addr, grpc::InsecureChannelCredentials())};
+  auto state{make_shared<ClientState>()};
 
-  cout << "You're all set! You can enter a chatroom now by typing enter "
-    "<chatroom>." << endl;
+  ChatServiceClient cs_api{grpc::CreateChannel(addr, grpc::InsecureChannelCredentials()), state};
 
-  bool vote_flag;
-  string vote_result;
-  bool vote_pending;
-  thread serverThread {
-    listen_to_server,
-    ref(csAPI),
-    ref(vote_flag),
-    ref(vote_result),
-    ref(vote_pending)
-  };
-  thread userThread {
-    listen_to_user,
-    ref(csAPI),
-    ref(vote_flag),
-    ref(vote_result),
-    ref(vote_pending)
-  };
+  cout << "You're all set! You can enter a chatroom now by typing enter <chatroom>." << endl;
+
+  thread serverThread {listen_to_server, ref(cs_api), state};
+  thread userThread {listen_to_user, ref(cs_api), state};
 
   serverThread.join();
   userThread.join();

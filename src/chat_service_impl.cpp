@@ -21,10 +21,8 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
     std::cout << "New connection from " << sender_addr << std::endl;
 
-    // Add nickname entry
-    state->set_nickname(context->peer(), context->peer());
+    state->register_user(context->peer());
     
-    // TODO add lock
     writers[sender_addr] = stream;
 
     client_server::Message read_message;

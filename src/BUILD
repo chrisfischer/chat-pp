@@ -67,11 +67,20 @@ cc_binary(
 )
 
 cc_library(
+    name = "client_state",
+    srcs = ["client_state.cpp"],
+    hdrs = ["client_state.hpp"],
+    linkopts = ["-lpthread"],
+    deps = ["//proto:client_server_cc_grpc"],
+)
+
+cc_library(
     name = "client_server_api",
     srcs = ["client_server_api.cpp"],
     hdrs = ["client_server_api.hpp"],
     linkopts = ["-lpthread"],
     deps = [
+        ":client_state",
         "//proto:client_server_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
     ],
@@ -83,8 +92,9 @@ cc_binary(
     defines = ["BAZEL_BUILD"],
     linkopts = ["-lpthread"],
     deps = [
+        ":client_state",
+        ":client_server_api",
         "//proto:client_server_cc_grpc",
-	    ":client_server_api",
         "@com_github_grpc_grpc//:grpc++",
     ],
 )

@@ -16,6 +16,10 @@ VoteState::VoteState(const std::string &room, client_server::VoteType vote_type,
 
 ServerState::ServerState() : mutex{std::make_unique<std::mutex>()} {}
 
+void ServerState::register_user(const std::string &addr) {
+    set_nickname(addr, addr.substr(addr.find_last_of(":") + 1, addr.size()));
+}
+
 const std::string &ServerState::set_nickname(const std::string &addr, 
                                              const std::string &nickname) {
     std::scoped_lock lock{*mutex};
@@ -133,10 +137,10 @@ std::optional<std::string> ServerState::addr_for_nickname(const std::string &nic
     return std::nullopt;
 }
 
-const std::string &ServerState::nickname_for_addr(const std::string &addr) const {
+std::string ServerState::nickname_for_addr(const std::string &addr) const {
     std::scoped_lock lock{*mutex};
     if (user2nickname.find(addr) == user2nickname.end()) {
-        return addr;
+        return addr.substr(addr.find_last_of(":") + 1, addr.size());
     }
     return user2nickname.at(addr);
 }

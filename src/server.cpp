@@ -49,9 +49,6 @@ int parse_config_file(const string &file_name, int server_number,
     while (infile >> line) {
         string ipport = line;
 
-        // string ip = ipport.substr(0, ipport.find(":"));
-        // int port = atoi(ipport.substr(ipport.find(":") + 1, ipport.size()).c_str());
-
         if (server_number == count) {
             bind_addr = line.substr(0, line.size());
             found = true;
@@ -93,7 +90,6 @@ int parse_args(bool *v_ptr, int *file_name, int *server_number, int argc,
                 *v_ptr = true;
                 break;
             default:
-                // cerr << "Invalid flag given" << endl;
                 return -1;
         }
     }
@@ -166,36 +162,8 @@ int main(int argc, char *argv[]) {
     sigaction(SIGINT, &sa, NULL);
 
     auto server_state = make_shared<ServerState>();
-    // {make_shared<ServerState>()};
     thread server_thread{run_server, bind_addr, server_fwd_addrs, server_state};
-    // sleep(2);
-    // if (SERVER_NUMBER == 1) {
-    //     ClientServerAPI chat_service{
-    //         grpc::CreateChannel(*server_fwd_addrs.begin(), grpc::InsecureChannelCredentials())};
-    //     // chat_service.start_stream();
-    //     chat_service.join_room("room1");
-    //     chat_service.leave_room();
-    //     // chat_service.change_nickname("chris0");
-    //     // chat_service.change_nickname("chris1");
 
-    //     auto stream{chat_service.get_stream()};
-    //     client_server::Message message;
-    //     while(stream->Read(&message)) {
-    //         if (message.has_vote_result_message()) {
-    //             cout << "result " << message.vote_result_message().nickname() << " " << message.for_current_user() << endl;
-    //         }
-    //         if (message.has_left_message()) {
-    //             cout << "left " << message.left_message().nickname() << " " << message.for_current_user() << endl;
-    //         }
-    //     }
-
-    //     // for (int i = 0; i < 10; i++) {
-            
-    //     //     cout << *server_state;
-    //     // }
-    //     server_thread.join();
-    // } else {
-    // }
     server_thread.join();
     
 }
