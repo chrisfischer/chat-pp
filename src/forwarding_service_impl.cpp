@@ -1,10 +1,9 @@
-#include "src/forwarding_service_impl.hpp"
-
+#include <iostream>
 #include <grpcpp/grpcpp.h>
 
-#include <iostream>
-
+#include "src/forwarding_service_impl.hpp"
 #include "proto/server_server.grpc.pb.h"
+#include "common.hpp"
 
 using namespace std;
 
@@ -16,13 +15,13 @@ ForwardingServiceImpl::ForwardingServiceImpl(
 grpc::Status ForwardingServiceImpl::Forward(grpc::ServerContext *context,
                                             const SS::ForwardedMessage *request,
                                             client_server::Empty *response) {
-    cout << "Received forward from " << context->peer() << endl;
+    log("Received forward from " + context->peer());
     chat_service->handle_forwarded_message(request->message(), 
                                            request->sender_id(), 
                                            request->message().room(),
                                            true);
 
-    std::cout << "Finished handling forwarded message\n";
+    log("Finished handling forwarded message from " + context->peer());
     std::cout << *state;
 
     return grpc::Status::OK;

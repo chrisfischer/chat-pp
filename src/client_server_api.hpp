@@ -9,31 +9,7 @@
 
 #include "src/client_state.hpp"
 
-namespace Color {
-    enum Code {
-        DEFAULT = 39,
-        RED = 31,
-        GREEN = 32,
-        BLUE = 96,
-    };
-    class Modifier {
-        Code code;
-    public:
-        Modifier(Code code) : code{code} {}
-        friend std::ostream& operator<<(std::ostream &os, const Modifier &mod)  {
-            return os << "\033[" << mod.code << "m";
-        }
-    };
-
-    const Modifier red = Modifier(RED);
-    const Modifier green = Modifier(GREEN);
-    const Modifier blue = Modifier(BLUE);
-    const Modifier def = Modifier(DEFAULT);
-}
-
-
 class ChatServiceClient {
-
 private:
     void send_message(client_server::Message &msg);
     
@@ -60,7 +36,7 @@ public:
     
     void process_msg(client_server::Message &msg);
     void process_text_msg(client_server::Message &msg);
-    
+
     std::string process_nickname_msg(client_server::Message &msg);
     std::string process_start_vote_msg(client_server::Message &msg);
     std::string process_left_msg(client_server::Message &msg);

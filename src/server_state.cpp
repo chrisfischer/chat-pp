@@ -153,14 +153,6 @@ std::optional<std::string> ServerState::get_room(const std::string &addr) const 
     return user2room.at(addr);
 }
 
-std::optional<std::string> ServerState::room_for_addr(const std::string &addr) const {
-    std::scoped_lock lock{*mutex};
-    if (user2room.find(addr) == user2room.end()) {
-        return std::nullopt;
-    }
-    return std::optional<std::string>{user2room.at(addr)};
-}
-
 const std::set<std::string> &ServerState::addrs_in_room(const std::string &room) {
     std::scoped_lock lock{*mutex};
     return room2users[room];
@@ -176,7 +168,7 @@ std::optional<VoteState> ServerState::get_vote(const std::string &vote_id) const
         return std::nullopt;
     }
     std::scoped_lock lock{*mutex};
-    return std::optional<VoteState>{votes.at(vote_id)};
+    return votes.at(vote_id);
 }
 
 std::optional<bool> ServerState::is_vote_complete(const std::string &vote_id) const {
@@ -197,7 +189,6 @@ std::optional<bool> ServerState::is_vote_complete(const std::string &vote_id) co
     }
 }
 
-// TODO auto& by ref?
 template<typename K, typename V>
 std::ostream& operator<<(std::ostream& os, const std::map<K, V>& m) {
     for (auto &elem : m) {

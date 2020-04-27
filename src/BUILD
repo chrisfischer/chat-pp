@@ -3,6 +3,14 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "common",
+    srcs = ["common.cpp"],
+    hdrs = ["common.hpp"],
+    linkopts = ["-lpthread"],
+    deps = [],
+)
+
+cc_library(
     name = "server_state",
     srcs = ["server_state.cpp"],
     hdrs = ["server_state.hpp"],
@@ -18,6 +26,7 @@ cc_library(
     srcs = ["chat_service_impl.cpp"],
     hdrs = ["chat_service_impl.hpp"],
     deps = [
+        ":common",
         ":server_state",
         ":forwarding_service_client",
         "//proto:client_server_cc_grpc",
@@ -31,6 +40,7 @@ cc_library(
     hdrs = ["forwarding_service_client.hpp"],
     linkopts = ["-lpthread"],
     deps = [
+        ":common",
         ":server_state",
         "//proto:client_server_cc_grpc",
         "//proto:server_server_cc_grpc",
@@ -58,7 +68,7 @@ cc_binary(
     defines = ["BAZEL_BUILD"],
     linkopts = ["-lpthread"],
     deps = [
-        # ":client_server_api", # TODO remove
+        ":common",
         ":chat_service_impl",
         ":forwarding_service_client",
         ":forwarding_service_impl",
@@ -80,6 +90,7 @@ cc_library(
     hdrs = ["client_server_api.hpp"],
     linkopts = ["-lpthread"],
     deps = [
+        ":common",
         ":client_state",
         "//proto:client_server_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
@@ -92,6 +103,7 @@ cc_binary(
     defines = ["BAZEL_BUILD"],
     linkopts = ["-lpthread"],
     deps = [
+        ":common",
         ":client_state",
         ":client_server_api",
         "//proto:client_server_cc_grpc",

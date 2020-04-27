@@ -12,9 +12,7 @@
 #include "forwarding_service_client.hpp"
 #include "forwarding_service_impl.hpp"
 #include "server_state.hpp"
-
-// TODO remove
-// #include "client_server_api.hpp"
+#include "common.hpp"
 
 using namespace std;
 
@@ -53,7 +51,8 @@ int parse_config_file(const string &file_name, int server_number,
             bind_addr = line.substr(0, line.size());
             found = true;
         } else {
-            fwd_addrs.insert(ipport);  // collection of addresses that we can sendto
+            // Collection of addresses that we neeed to forward to
+            fwd_addrs.insert(ipport);
         }
 
         count++;
@@ -120,7 +119,7 @@ void run_server(const string &bind_addr, const set<string> &server_fwd_addrs, sh
     auto chat_service{make_shared<ChatServiceImpl>(server_state, server_fwd_addrs)};
     ForwardingServiceImpl fowarding_service{server_state, chat_service};
     grpc::ServerBuilder builder;
-    cout << "run_server " << bind_addr << endl;
+    log("Running server on " + bind_addr);
     builder.AddListeningPort(bind_addr, grpc::InsecureServerCredentials());
     builder.RegisterService(chat_service.get());
     builder.RegisterService(&fowarding_service);

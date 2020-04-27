@@ -68,22 +68,23 @@ class ServerState {
     void remove_vote(const std::string &vote_id);
 
     unsigned int get_room_size(const std::string &room) const;
-    // TODO make more efficient
+    
     std::optional<std::string> addr_for_nickname(const std::string &nickname) const;
-    // Returns addr if none found
+    // Returns default nickname (port) if none found
     std::string nickname_for_addr(const std::string &addr) const;
 
+    // Return current room for the given user
     std::optional<std::string> get_room(const std::string &addr) const; 
-
-    std::optional<std::string> room_for_addr(const std::string &addr) const;
     const std::set<std::string> &addrs_in_room(const std::string &room);
 
-    // Whether this sever contain state on the given vote_id
+    // Whether this server contain state on the given vote_id
     bool has_vote(const std::string &vote_id) const;
+    // Get information on the given vote id
     std::optional<VoteState> get_vote(const std::string &vote_id) const;
+    // Whether this vote has enough votes to be complete given the room size
     std::optional<bool> is_vote_complete(const std::string &vote_id) const;
 
-    friend std::ostream& operator<<(std::ostream& os, const ServerState& state);
+    friend std::ostream& operator<<(std::ostream &os, const ServerState &state);
 };
 
 #endif /* SERVER_STATE_HPP_ */

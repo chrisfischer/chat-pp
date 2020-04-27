@@ -13,12 +13,14 @@
 #include "proto/client_server.grpc.pb.h"
 #include "src/client_server_api.hpp"
 #include "src/client_state.hpp"
+#include "src/common.hpp"
 
 using namespace std;
 
+bool IS_VERBOSE = false;
 
 void print_help_message() {
-  cout << Color::green;
+  cout << color::green;
   cout << "Ĉ++ has five special commands:" << endl;
   cout << "1. help : Open the help menu" << endl;
   cout << "2. enter <chatroom> : Request to join <chatroom>. Users of <chatroom> will "
@@ -26,13 +28,13 @@ void print_help_message() {
   cout << "3. leave : Leave your current chatroom." << endl;
   cout << "4. nickname <new_nickname> : Change your nickname." << endl;
   cout << "5. kick <nickname> : Start a vote to kick someone out of the chatroom." << endl;
-  cout << Color::def;
+  cout << color::def;
 }
 
 string prompt_cli() {
-  cout << Color::green;
+  cout << color::green;
   cout << "Welcome to Ĉ++!" << endl << endl;
-  cout << Color::def;
+  cout << color::def;
   print_help_message();
   cout << endl;
 
@@ -74,22 +76,22 @@ void parse_input(string &input, ChatServiceClient& cs_api, shared_ptr<ClientStat
   } else if (input.rfind("enter ", 0) == 0 && !state->in_room()) {
     string room {input.erase(0, 6)};
     if (room.empty()) {
-      cout << Color::red << "Invalid room" << endl << Color::def;
+      cout << color::red << "Invalid room" << endl << color::def;
       return;
     }
     cs_api.join_room(room);
-    cout << Color::blue << "Users from " << room << " will now vote..." << endl << Color::def;
+    cout << color::blue << "Users from " << room << " will now vote..." << endl << color::def;
     state->vote_pending = true;
   } else if (input.rfind("nickname ", 0) == 0) {
     string nickname {input.erase(0, 9)};
     if (nickname.empty()) {
-      cout << Color::red << "Invalid nickname" << endl << Color::def;
+      cout << color::red << "Invalid nickname" << endl << color::def;
       return;
     }
     cs_api.change_nickname(nickname);
   } else if (!state->in_room()) {
-    cout << Color::red << "You are not currently in a chatroom. Type enter <chatroom> to "
-      "enter a room." << endl << Color::def;
+    cout << color::red << "You are not currently in a chatroom. Type enter <chatroom> to "
+      "enter a room." << endl << color::def;
   } else if (input.rfind("leave", 0) == 0) {
     cs_api.leave_room();
   } else if (input.rfind("kick ", 0) == 0) {

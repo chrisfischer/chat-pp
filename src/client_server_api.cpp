@@ -6,17 +6,9 @@
 
 #include "src/client_server_api.hpp"
 #include "src/client_state.hpp"
+#include "src/common.hpp"
 
 using namespace std;
-
-// std::ostream& operator<<(std::ostream &os, const Color::Modifier &mod) {
-//     return os << "\033[" << mod.code << "m";
-// }
-
-// const Modifier Color::red = Modifier(RED);
-// const Modifier Color::green = Modifier(GREEN);
-// const Modifier Color::blue = Modifier(BLUE);
-// const Modifier Color::def = Modifier(DEFAULT);
 
 ChatServiceClient::ChatServiceClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<ClientState> state) 
   : state{state}, stub_{client_server::ChatService::NewStub(channel)} {
@@ -89,7 +81,7 @@ void ChatServiceClient::submit_vote(const string &vote_id, bool vote) {
 }
 
 void ChatServiceClient::process_text_msg(client_server::Message &msg) {
-    cout << Color::blue << msg.room() + " (" + msg.text_message().nickname() + ") > " << Color::def <<
+    cout << color::blue << msg.room() + " (" + msg.text_message().nickname() + ") > " << color::def <<
       msg.text_message().text() << endl;
 }
 
@@ -161,7 +153,7 @@ void ChatServiceClient::process_msg(client_server::Message &msg) {
     } else if (msg.has_start_vote_message()) {
         to_show = ChatServiceClient::process_getting_kicked_msg(msg);
     } else {
-        cout << Color::red << "ERROR: invalid message" << Color::def << endl;
+        cout << color::red << "ERROR: invalid message" << color::def << endl;
     }
-    cout << Color::blue << msg.room() + " > " << Color::def << to_show << endl;
+    cout << color::blue << msg.room() + " > " << color::def << to_show << endl;
 }

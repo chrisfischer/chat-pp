@@ -1,14 +1,17 @@
-#include "src/chat_service_impl.hpp"
-
 #include <algorithm>
 #include <iostream>
 
-ChatServiceImpl::ChatServiceImpl(std::shared_ptr<ServerState> state, const std::set<std::string> &addrs) : state{state} {
+#include "src/chat_service_impl.hpp"
+#include "src/common.hpp"
+
+using namespace std;
+
+ChatServiceImpl::ChatServiceImpl(shared_ptr<ServerState> state, const set<string> &addrs) : state{state} {
     forwarding_clients.resize(addrs.size());
-    std::transform(
+    transform(
         addrs.begin(), addrs.end(), forwarding_clients.begin(),
-        [&state](std::string addr) -> std::unique_ptr<ForwardingServiceClient> {
-            return std::make_unique<ForwardingServiceClient>(
+        [&state](string addr) -> unique_ptr<ForwardingServiceClient> {
+            return make_unique<ForwardingServiceClient>(
                 grpc::CreateChannel(addr, grpc::InsecureChannelCredentials()), state);
         });
 }
@@ -19,7 +22,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
     auto sender_addr{context->peer()};
 
-    std::cout << "New connection from " << sender_addr << std::endl;
+    log("New connection from " + sender_addr);
 
     state->register_user(context->peer());
     
@@ -31,7 +34,7 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
         handle_message(read_message, sender_addr);
     };
 
-    std::cout << "Leaving ReceiveMessages\n";
+    log(sender_addr + " disconnecting");
 
     writers.erase(sender_addr);
 
@@ -46,18 +49,18 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
 
     state->remove_user(context->peer());
 
-    std::cout << *state;
+    cout << *state;
 
     return grpc::Status::OK;
 }
 
 void ChatServiceImpl::handle_message(client_server::Message message,
-                                     const std::string &sender_addr) {
+                                     const string &sender_addr) {
 
-    std::cout << "Handling client message " << sender_addr << std::endl;
+    log("Handling client message from " + sender_addr);
 
-    std::string room;
-    if (auto opt_room{state->room_for_addr(sender_addr)}; opt_room) {
+    string room;
+    if (auto opt_room{state->get_room(sender_addr)}; opt_room) {
         // Normal message
         room = opt_room.value();
     } else {
@@ -69,22 +72,22 @@ void ChatServiceImpl::handle_message(client_server::Message message,
         if (type == client_server::VoteType::JOIN) {
             // Must specify room
             if (message.room().empty()) {
-                std::cerr << "room not included in request " << sender_addr << std::endl;
+                log_err("Room not included in request " + sender_addr);
                 return;
             }
             if (state->get_room(sender_addr)) {
-                std::cerr << "already in room " << sender_addr << std::endl;
+                log_err("User already in room " + sender_addr);
                 return;
             }
         }
         // Must specify nickname on kick
         if (type == client_server::VoteType::KICK) {
             if (message.start_vote_message().nickname().empty()) {
-                std::cerr << "nickname not included in request " << sender_addr << std::endl;
+                log_err("Nickname not included in request " + sender_addr);
                 return;
             }
             if (message.start_vote_message().nickname() == state->nickname_for_addr(sender_addr)) {
-                std::cerr << "cannot vote to kick yourself " << sender_addr << std::endl;
+                log_err("Cannot vote to kick yourself " + sender_addr);
                 return;
             }
         }
@@ -131,24 +134,25 @@ void ChatServiceImpl::handle_message(client_server::Message message,
     forward(message, sender_addr, room);
     handle_forwarded_message(message, sender_addr, room, false);
 
-    std::cout << "Finished handling client message\n";
-    std::cout << *state;
+    log("Finished handling client message " + sender_addr);
+    cout << *state;
 }
 
 
 void ChatServiceImpl::forward(const client_server::Message &message,
-                              const std::string &sender_addr,
-                              const std::string &room) {
+                              const string &sender_addr,
+                              const string &room) {
     // TODO change to foreach + functional
-    std::cout << "Forwarding to " << forwarding_clients.size() << " servers\n";
+    log("Forwarding to " + to_string(forwarding_clients.size()) + " servers");
     for (unsigned int i = 0; i < forwarding_clients.size(); i++) {
         forwarding_clients.at(i)->Forward(sender_addr, message, room);
     }
+    log("Done Forwarding");
 }
 
 void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
-                                               std::string sender_addr,
-                                               const std::string &room,
+                                               string sender_addr,
+                                               const string &room,
                                                bool forwarded) {
 
     message.set_room(room);
@@ -156,7 +160,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     // Whether or not a vote is completed
     bool send_completed_vote{false};
     bool vote_result;
-    std::string vote_id;
+    string vote_id;
 
     bool send_to_kicked{false};
     bool send_to_rejected{false};
@@ -188,7 +192,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             }
         }
     } else if (message.has_vote_result_message()) {
-        std::cout << *state;
+        cout << *state;
         state->set_room_size(room, message.vote_result_message().total_number_users());
 
         // TODO can get out of vote by just changing your nickname
@@ -215,7 +219,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
         }
     }
 
-    std::cout << "Sending to clients\n";
+    log("Sending to " + to_string(state->addrs_in_room(room).size()) + " clients");
 
     // Send to relevant clients
 
@@ -248,7 +252,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
     if (send_completed_vote) {
         if (auto opt_vote_state{state->get_vote(vote_id)}; opt_vote_state) {
-            std::cout << "Sending completed vote\n";
+            log("Sending completed vote message");
             auto vote_state{opt_vote_state.value()};
 
             auto total_number_users{state->get_room_size(room)};
@@ -266,7 +270,6 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
             completed_message.set_allocated_vote_result_message(vote_result_message);
 
             // TODO async?
-            // TODO bring into separate function
             forward(completed_message, "", room);
             handle_forwarded_message(completed_message, "", room, false);
 
@@ -275,15 +278,12 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
     }
 }
 
-void ChatServiceImpl::forward_to_client(client_server::Message &message, const std::string &addr, bool for_current_user) {
-    std::cout << "\t" + addr << std::endl;
-
-    // TODO clean up
+void ChatServiceImpl::forward_to_client(client_server::Message &message, const string &addr, bool for_current_user) {
     message.set_for_current_user(for_current_user);
 
     if (writers.find(addr) != writers.end()) {
         writers.at(addr)->Write(message);
     } else {
-        std::cerr << "writer not found " << addr << std::endl;
+        log_err("Writer not found " + addr);
     }
 }
