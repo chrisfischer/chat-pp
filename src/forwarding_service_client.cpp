@@ -35,11 +35,8 @@ void ForwardingServiceClient::Forward(const std::string &sender_addr,
     copy->set_room(room);
     request.set_allocated_message(copy);
 
-    cout << "Forwarding" << endl;
-
     // TODO this is def broken
     grpc::ClientContext context;
-    // stub_->AsyncForward(&context, request, &cq);
 
     // TODO make this async
     client_server::Empty response;

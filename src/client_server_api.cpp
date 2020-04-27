@@ -104,32 +104,28 @@ string ClientServerAPI::process_nickname_msg(client_server::Message &msg) {
         nickname = msg.nickname_message().new_nickname();
     }
     return msg.room() + " > " + msg.nickname_message().old_nickname() +
-        " has changed their nickname to " +
-        msg.nickname_message().new_nickname() + ".";
+        " changed their nickname to " +
+        msg.nickname_message().new_nickname();
 }
 
 string ClientServerAPI::process_start_vote_msg(client_server::Message &msg) {
     if (msg.start_vote_message().type() == client_server::JOIN) {
-        return msg.room() + " > Please vote on whether to allow " +
+        return msg.room() + " > Allow " +
                msg.start_vote_message().nickname() +
-               " to join the chatroom. If you would like to let this person in, "
-               "respond YES. Otherwise, respond NO. If you do not answer in the "
-               "designated format your vote will default to a no.";
+               " to join? (y/n)";
     }
-    return msg.room() + " > Please vote on whether to kick " +
+    return msg.room() + " > Kick " +
            msg.start_vote_message().nickname() +
-           " from the chatroom. If you would like to kick this person out, "
-           "respond YES. Otherwise, respond NO. If you do not answer in the "
-           "designated format your vote will default to a no.";
+           " from the chatroom? (y/n)";
 }
 
 string ClientServerAPI::process_left_msg(client_server::Message &msg) {
-  if(msg.for_current_user()) {
+  if (msg.for_current_user()) {
     room = "";
     nickname = "";
   }
   return msg.room() + " > " + msg.left_message().nickname() +
-         " has left the room.";
+        " has left the room.";
 }
 
 string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
@@ -143,7 +139,7 @@ string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
                     ? "You have "
                     : msg.vote_result_message().nickname() + " has ";
   string type = ((msg.vote_result_message().type() == client_server::JOIN)
-                    ? "been invited to join "
+                    ? "been added to "
                     : "been kicked from ")
                     + msg.room() + ".";
   string result = (msg.vote_result_message().vote()) ? "" : "not ";
@@ -151,7 +147,7 @@ string ClientServerAPI::process_vote_result_msg(client_server::Message &msg) {
 }
 
 string ClientServerAPI::process_vote_msg(client_server::Message &msg) {
-  return msg.room() + " > Your vote is in. Thanks!";
+  return msg.room() + " > You voted " + (msg.vote_message().vote() ? "(yes)" : "(no)");
 }
 
 string ClientServerAPI::process_getting_kicked_msg(client_server::Message &msg) {
