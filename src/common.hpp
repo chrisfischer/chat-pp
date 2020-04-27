@@ -1,5 +1,5 @@
 #ifndef COMMON_HPP_
-#define COMMON_HH_
+#define COMMON_HPP_
 
 #include <ostream>
 #include <string>
