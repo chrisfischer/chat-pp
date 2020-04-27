@@ -9,10 +9,10 @@
 #include <string>
 #include <thread>
 
+#include "common.hpp"
 #include "forwarding_service_client.hpp"
 #include "forwarding_service_impl.hpp"
 #include "server_state.hpp"
-#include "common.hpp"
 
 using namespace std;
 
@@ -115,7 +115,7 @@ void sig_handler(int s) {
     }
 }
 
-void run_server(const string &bind_addr, const set<string> &server_fwd_addrs, shared_ptr<ServerState>server_state) {
+void run_server(const string &bind_addr, const set<string> &server_fwd_addrs, shared_ptr<ServerState> server_state) {
     auto chat_service{make_shared<ChatServiceImpl>(server_state, server_fwd_addrs)};
     ForwardingServiceImpl fowarding_service{server_state, chat_service};
     grpc::ServerBuilder builder;
@@ -164,5 +164,4 @@ int main(int argc, char *argv[]) {
     thread server_thread{run_server, bind_addr, server_fwd_addrs, server_state};
 
     server_thread.join();
-    
 }

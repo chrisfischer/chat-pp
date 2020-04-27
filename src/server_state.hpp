@@ -55,19 +55,19 @@ class ServerState {
     unsigned int decr_room_size(const std::string &room);
 
     std::string start_vote(const std::string &room,
-                                  client_server::VoteType vote_type,
-                                  const std::string &target_addr);
+                           client_server::VoteType vote_type,
+                           const std::string &target_addr);
     bool set_vote(const std::string &vote_id, bool vote_for, const std::string &addr);
     void remove_vote(const std::string &vote_id);
 
     unsigned int get_room_size(const std::string &room) const;
-    
+
     std::optional<std::string> addr_for_nickname(const std::string &nickname) const;
     // Returns default nickname (port) if none found
     std::string nickname_for_addr(const std::string &addr) const;
 
     // Return current room for the given user
-    std::optional<std::string> get_room(const std::string &addr) const; 
+    std::optional<std::string> get_room(const std::string &addr) const;
     const std::set<std::string> &addrs_in_room(const std::string &room);
 
     // Whether this server contain state on the given vote_id
@@ -77,7 +77,7 @@ class ServerState {
     // Whether this vote has enough votes to be complete given the room size
     std::optional<bool> is_vote_complete(const std::string &vote_id) const;
 
-    friend std::ostream& operator<<(std::ostream &os, const ServerState &state);
+    friend std::ostream &operator<<(std::ostream &os, const ServerState &state);
 };
 
 #endif /* SERVER_STATE_HPP_ */

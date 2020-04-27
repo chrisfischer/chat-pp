@@ -1,10 +1,9 @@
 #include "server_state.hpp"
 
-#include <iostream>
-
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <iostream>
 
 VoteState::VoteState(const std::string &room, client_server::VoteType vote_type,
                      const std::string &target_nickname)
@@ -20,7 +19,7 @@ void ServerState::register_user(const std::string &addr) {
     set_nickname(addr, addr.substr(addr.find_last_of(":") + 1, addr.size()));
 }
 
-const std::string &ServerState::set_nickname(const std::string &addr, 
+const std::string &ServerState::set_nickname(const std::string &addr,
                                              const std::string &nickname) {
     std::scoped_lock lock{*mutex};
     bool exists = user2nickname.find(addr) == user2nickname.end();
@@ -126,7 +125,6 @@ unsigned int ServerState::get_room_size(const std::string &room) const {
     return room2size.at(room);
 }
 
-
 std::optional<std::string> ServerState::addr_for_nickname(const std::string &nickname) const {
     std::scoped_lock lock{*mutex};
     for (auto elt : user2nickname) {
@@ -189,15 +187,15 @@ std::optional<bool> ServerState::is_vote_complete(const std::string &vote_id) co
     }
 }
 
-template<typename K, typename V>
-std::ostream& operator<<(std::ostream& os, const std::map<K, V>& m) {
+template <typename K, typename V>
+std::ostream &operator<<(std::ostream &os, const std::map<K, V> &m) {
     for (auto &elem : m) {
         os << elem.first << " -> " << elem.second << std::endl;
     }
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const ServerState& state) {
+std::ostream &operator<<(std::ostream &os, const ServerState &state) {
     os << "**********\n";
     os << "Nicknames:\n";
     os << state.user2nickname;

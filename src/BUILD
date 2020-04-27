@@ -27,8 +27,8 @@ cc_library(
     hdrs = ["chat_service_impl.hpp"],
     deps = [
         ":common",
-        ":server_state",
         ":forwarding_service_client",
+        ":server_state",
         "//proto:client_server_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
     ],
@@ -68,8 +68,8 @@ cc_binary(
     defines = ["BAZEL_BUILD"],
     linkopts = ["-lpthread"],
     deps = [
-        ":common",
         ":chat_service_impl",
+        ":common",
         ":forwarding_service_client",
         ":forwarding_service_impl",
         ":server_state",
@@ -90,8 +90,8 @@ cc_library(
     hdrs = ["client_server_api.hpp"],
     linkopts = ["-lpthread"],
     deps = [
-        ":common",
         ":client_state",
+        ":common",
         "//proto:client_server_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
     ],
@@ -103,9 +103,9 @@ cc_binary(
     defines = ["BAZEL_BUILD"],
     linkopts = ["-lpthread"],
     deps = [
-        ":common",
-        ":client_state",
         ":client_server_api",
+        ":client_state",
+        ":common",
         "//proto:client_server_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
     ],

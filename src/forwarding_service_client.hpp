@@ -1,12 +1,12 @@
 #ifndef FORWARDING_SERIVCE_CLIENT_HPP_
 #define FORWARDING_SERIVCE_CLIENT_HPP_
 
+#include <grpcpp/grpcpp.h>
+
 #include <string>
 
-#include <grpcpp/grpcpp.h>
 #include "proto/client_server.grpc.pb.h"
 #include "proto/server_server.grpc.pb.h"
-
 #include "server_state.hpp"
 
 class ForwardingServiceClient {
