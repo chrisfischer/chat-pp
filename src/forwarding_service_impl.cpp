@@ -23,6 +23,7 @@ grpc::Status ForwardingServiceImpl::Forward(grpc::ServerContext *context,
                                            true);
 
     std::cout << "Finished handling forwarded message\n";
+    std::cout << *state;
 
     return grpc::Status::OK;
 }

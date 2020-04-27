@@ -58,8 +58,8 @@ class ServerState {
     unsigned int decr_room_size(const std::string &room);
 
     std::string start_vote(const std::string &room,
-                           client_server::VoteType vote_type,
-                           const std::string &target_addr);
+                                  client_server::VoteType vote_type,
+                                  const std::string &target_addr);
     bool set_vote(const std::string &vote_id, bool vote_for, const std::string &addr);
     void remove_vote(const std::string &vote_id);
 

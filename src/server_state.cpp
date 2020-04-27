@@ -194,16 +194,9 @@ std::optional<bool> ServerState::is_vote_complete(const std::string &vote_id) co
 }
 
 // TODO auto& by ref?
-// template<class K, class V>
-std::ostream& operator<<(std::ostream& os, const std::map<std::string, std::string>& m) {
-    for (auto elem : m) {
-        os << elem.first << " -> " << elem.second << std::endl;
-    }
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const std::map<std::string, unsigned int>& m) {
-    for (auto elem : m) {
+template<typename K, typename V>
+std::ostream& operator<<(std::ostream& os, const std::map<K, V>& m) {
+    for (auto &elem : m) {
         os << elem.first << " -> " << elem.second << std::endl;
     }
     return os;

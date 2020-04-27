@@ -17,10 +17,13 @@ grpc::Status ChatServiceImpl::ReceiveMessages(
     grpc::ServerContext* context,
     grpc::ServerReaderWriter<client_server::Message, client_server::Message>* stream) {
 
-    std::cout << "impl ReceiveMessages\n";
-
     auto sender_addr{context->peer()};
+
+    std::cout << "New connection from " << sender_addr << std::endl;
+
+    // Add nickname entry
     state->set_nickname(context->peer(), context->peer());
+    
     // TODO add lock
     writers[sender_addr] = stream;
 
@@ -56,7 +59,7 @@ void ChatServiceImpl::handle_message(client_server::Message message,
     std::cout << "Handling client message " << sender_addr << std::endl;
 
     std::string room;
-    if (auto opt_room {state->room_for_addr(sender_addr)}; opt_room) {
+    if (auto opt_room{state->room_for_addr(sender_addr)}; opt_room) {
         // Normal message
         room = opt_room.value();
     } else {
@@ -89,9 +92,9 @@ void ChatServiceImpl::handle_message(client_server::Message message,
         }
 
         // TODO only copy message if necessary
-        auto nickname = type == client_server::VoteType::JOIN ?
-            state->nickname_for_addr(sender_addr) : message.start_vote_message().nickname();
-        auto vote_id = state->start_vote(room, message.start_vote_message().type(), nickname);
+        auto &nickname{type == client_server::VoteType::JOIN ?
+            state->nickname_for_addr(sender_addr) : message.start_vote_message().nickname()};
+        auto vote_id{state->start_vote(room, message.start_vote_message().type(), nickname)};
 
         auto start_vote_message_copy = new client_server::StartVoteMessage{message.start_vote_message()};
         start_vote_message_copy->set_vote_id(vote_id);
@@ -100,8 +103,9 @@ void ChatServiceImpl::handle_message(client_server::Message message,
 
     } else if (message.has_vote_message()) {
         // Prevent counting vote message if sender is target
-        if (auto opt_vote_state = state->get_vote(message.vote_message().vote_id());
-            opt_vote_state && opt_vote_state.value().target_nickname == state->nickname_for_addr(sender_addr)) {
+        if (auto opt_vote_state{state->get_vote(message.vote_message().vote_id())};
+                opt_vote_state && 
+                opt_vote_state.value().target_nickname == state->nickname_for_addr(sender_addr)) {
             return;
         }
     } else if (message.has_nickname_message()) {
@@ -217,7 +221,7 @@ void ChatServiceImpl::handle_forwarded_message(client_server::Message message,
 
     // Send to relevant clients
 
-    for (auto addr : state->addrs_in_room(room)) {
+    for (auto &addr : state->addrs_in_room(room)) {
         bool for_current_user = !forwarded && sender_addr == addr &&
             (message.has_left_message() || message.has_vote_result_message() ||
                 message.has_nickname_message() || message.has_vote_message());
