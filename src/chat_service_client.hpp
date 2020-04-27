@@ -1,5 +1,5 @@
-#ifndef CLIENT_SERVER_API_HPP_
-#define CLIENT_SERVER_API_HPP_
+#ifndef CHAT_SERVICE_CLIENT_HPP_
+#define CHAT_SERVICE_CLIENT_HPP_
 
 #include <grpcpp/grpcpp.h>
 
@@ -47,4 +47,4 @@ class ChatServiceClient {
     std::string process_getting_kicked_msg(client_server::Message &msg);
 };
 
-#endif /* CLIENT_SERVER_API_HPP_ */
+#endif /* CHAT_SERVICE_CLIENT_HPP_ */

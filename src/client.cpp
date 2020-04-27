@@ -12,7 +12,7 @@
 #include <string_view>
 
 #include "proto/client_server.grpc.pb.h"
-#include "src/client_server_api.hpp"
+#include "src/chat_service_client.hpp"
 #include "src/client_state.hpp"
 #include "src/common.hpp"
 

@@ -1,4 +1,4 @@
-#include "src/client_server_api.hpp"
+#include "src/chat_service_client.hpp"
 
 #include <grpcpp/grpcpp.h>
 

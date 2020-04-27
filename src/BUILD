@@ -85,9 +85,9 @@ cc_library(
 )
 
 cc_library(
-    name = "client_server_api",
-    srcs = ["client_server_api.cpp"],
-    hdrs = ["client_server_api.hpp"],
+    name = "chat_service_client",
+    srcs = ["chat_service_client.cpp"],
+    hdrs = ["chat_service_client.hpp"],
     linkopts = ["-lpthread"],
     deps = [
         ":client_state",
@@ -103,7 +103,7 @@ cc_binary(
     defines = ["BAZEL_BUILD"],
     linkopts = ["-lpthread"],
     deps = [
-        ":client_server_api",
+        ":chat_service_client",
         ":client_state",
         ":common",
         "//proto:client_server_cc_grpc",

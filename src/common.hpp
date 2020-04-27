@@ -1,6 +1,9 @@
 #ifndef COMMON_HPP_
 #define COMMON_HH_
 
+#include <ostream>
+#include <string>
+
 extern bool IS_VERBOSE;
 extern int SERVER_NUMBER;
 

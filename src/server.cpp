@@ -128,7 +128,7 @@ void run_server(const string &bind_addr, const set<string> &server_fwd_addrs, sh
 }
 
 int main(int argc, char *argv[]) {
-    // PARSING ARGUMENTS
+    // Parsing arguments
     IS_VERBOSE = false;
     int file_name_index;
     int server_number_index;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // HANDLING INVALID SERVER NUMBER
+    // Handling invalid server number
     char *endptr;
     SERVER_NUMBER = strtol(argv[server_number_index], &endptr, 10);
     if (endptr == argv[server_number_index] || *endptr != '\0' ||
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // PARSING CONFIG FILE
+    // Parsing config file
     string bind_addr;
     set<string> server_fwd_addrs;
     if (parse_config_file(argv[file_name_index], SERVER_NUMBER, server_fwd_addrs,
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // set up sigint handler
+    // Set up sigint handler
     struct sigaction sa;
     sa.sa_flags = 0;
     sa.sa_handler = sig_handler;
